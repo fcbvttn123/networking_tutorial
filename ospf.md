@@ -1,3 +1,37 @@
+# Contents
+
+- [Contents](#contents)
+- [How **link-state routing protocols** work](#how-link-state-routing-protocols-work)
+- [OSPF packets types](#ospf-packets-types)
+  - [Hello](#hello)
+  - [DBD (Database Description)](#dbd-database-description)
+  - [LSR (Link-state request)](#lsr-link-state-request)
+  - [LSU (Link-State Update)](#lsu-link-state-update)
+  - [LSAck (Link-State Acknowledgment)](#lsack-link-state-acknowledgment)
+- [Basic OSPF Config](#basic-ospf-config)
+  - [Enable OSPF: `R1(config)# router ospf <process_id>`](#enable-ospf-r1config-router-ospf-process_id)
+  - [Advertise Routes: `R1(config-router)# network <network_address> <wildcard_mask> area <area_ID>`](#advertise-routes-r1config-router-network-network_address-wildcard_mask-area-area_id)
+  - [OSPF Router ID: `R1(config-router)# router-id <unique_ip_address>`](#ospf-router-id-r1config-router-router-id-unique_ip_address)
+  - [Verifying OSPF operation](#verifying-ospf-operation)
+- [OSPF Cost](#ospf-cost)
+  - [The cost formula](#the-cost-formula)
+  - [Cumulative Metric](#cumulative-metric)
+  - [Inspect Interface Cost of a Router](#inspect-interface-cost-of-a-router)
+  - [Modify OSPF Cost](#modify-ospf-cost)
+- [Passive Interface](#passive-interface)
+- [Redistributing Default Route](#redistributing-default-route)
+- [OSPF Multi Area](#ospf-multi-area)
+  - [Router Types](#router-types)
+  - [Route Types (`show ip routes`): `O`, `O IA`, `O*E2`](#route-types-show-ip-routes-o-o-ia-oe2)
+  - [LSA Section Types in `show ip ospf database`](#lsa-section-types-in-show-ip-ospf-database)
+- [Broadcast Multi Access Network](#broadcast-multi-access-network)
+  - [What is a multi-access network](#what-is-a-multi-access-network)
+  - [Challenges in OSPF Broadcast multi-access networks](#challenges-in-ospf-broadcast-multi-access-networks)
+  - [Solutions to OSPF broadcast multi-access problems (`DR` and `BDR`)](#solutions-to-ospf-broadcast-multi-access-problems-dr-and-bdr)
+  - [Election of DR and BDR](#election-of-dr-and-bdr)
+
+
+
 # How **link-state routing protocols** work
 
 - Link-state protocols use the **SPF algorithm** which was developed by **Edsger Dijkstra**
