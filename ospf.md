@@ -168,3 +168,121 @@ R1# show ip ospf interface G0/1
 - Only do this on the router connected to the ISP
 
 - No need to do it on the other routers
+
+
+
+
+# OSPF Multi Area
+
+## Router Types
+
+- Internal Router: All of its interfaces reside entirely within a single area
+
+- ABR
+
+    - Area Border Router
+    
+    - Connects two or more areas (must have at least one interface in Area 0 and one in a non-backbone area)
+    
+    - Maintains separate Link-State Databases (`LSDB`) for each connected area
+
+- ASBR: Connects the OSPF network to an outside network domain (e.g., BGP, EIGRP, or a static default route to the Internet)
+
+## Route Types (`show ip routes`): `O`, `O IA`, `O*E2`
+
+```bash
+Router# show ip route
+
+Gateway of last resort is 10.0.0.1 to network 0.0.0.0
+
+Gateway of last resort is 10.0.0.1 to network 0.0.0.0
+
+      10.0.0.0/8 is variably subnetted, 6 subnets, 2 masks
+C        10.1.10.0/24 is directly connected, GigabitEthernet0/0/0
+L        10.1.10.1/32 is directly connected, GigabitEthernet0/0/0
+O        10.1.20.0/24 [110/11] via 10.1.10.2, 00:14:22, GigabitEthernet0/0/0
+O IA     10.2.10.0/24 [110/21] via 10.0.0.2, 01:05:10, GigabitEthernet0/0/1
+O*E2  0.0.0.0/0 [110/1] via 10.0.0.1, 02:11:45, GigabitEthernet0/0/1
+```
+
+- `O`: **Intra-area** route (Destination network is inside the same area)
+
+- `O IA`: **Inter-area** route (Destination network is in a different area, learned from an ABR)
+
+- `O*E2`: **External** route (Learned outside of OSPF, like a default route to the Internet redistributed into OSPF)
+
+## LSA Section Types in `show ip ospf database`
+
+```bash
+R1# show ip ospf database
+
+            OSPF Router with ID (1.1.1.1) (Process ID 1)
+
+		Router Link States (Area 0)
+
+Link ID         ADV Router      Age         Seq#       Checkbox Link count
+1.1.1.1         1.1.1.1         342         0x80000003 0x004A2C 2
+2.2.2.2         2.2.2.2         1205        0x80000002 0x003D3B 1
+
+		Net Link States (Area 0)
+
+Link ID         ADV Router      Age         Seq#       Checkbox
+10.0.0.2        2.2.2.2         1205        0x80000001 0x008F12
+
+		Summary Net Link States (Area 0)
+
+Link ID         ADV Router      Age         Seq#       Checkbox
+10.1.20.0       1.1.1.1         342         0x80000001 0x002B41
+
+		Router Link States (Area 1)
+
+Link ID         ADV Router      Age         Seq#       Checkbox Link count
+1.1.1.1         1.1.1.1         342         0x80000004 0x005B1E 1
+10.1.20.2       10.1.20.2       890         0x80000002 0x001A8F 2
+
+		Summary Net Link States (Area 1)
+
+Link ID         ADV Router      Age         Seq#       Checkbox
+10.0.0.0        1.1.1.1         342         0x80000001 0x003A12
+10.2.10.0       1.1.1.1         342         0x80000001 0x00412B
+
+		Type-5 AS External Link States
+
+Link ID         ADV Router      Age         Seq#       Checkbox Tag
+0.0.0.0         2.2.2.2         1500        0x80000001 0x009E01 0
+```
+
+- Router Link States (Type 1 LSA)
+
+    - LSA is created by all routers in the same area
+
+    - LSA isn't sent to other areas
+
+- Net Link States (Type 2 LSA)
+
+- Summary Net Link States (Type 3 LSA - Summary LSA)
+
+    - Sent by **ABR Routers** to other areas
+
+    - Summarize **Type 1, Type 2 and Type 3 LSAs** from areas
+
+    - If one area has 20 IP Networks all in the `/16` network, instead of sending 20 LSAs, the ABR can send one LSA with the single `/16` network
+
+- Type-5 AS External Link States (Type 5 LSA)
+
+    - Redistributed by the **ASBR Router** across the entire OSPF domain
+
+    - Inside that Type 5 LSA, the ASBR puts its Router ID as the **ADV Router** (Advertising Router)
+
+    - Why do we need LSA Type 4?
+
+        - Type 3 LSAs advertise subnets (IP addresses + masks), whereas Type 4 LSAs specifically advertise a Router ID (a node, not a subnet)
+
+        - When a Type 5 LSA moves from Area 1 into Area 0, the ABR leaves the ADV Router field set to the original ASBR's Router ID (e.g., `4.4.4.4`)
+
+        - Inside Area 1, routers know how to physically reach Router ID 4.4.4.4 because of the Type 1 LSAs flooded in Area 1
+
+        - Routers in area 0 and 2 receive the Type 5 LSA saying: "Network 0.0.0.0/0 is available via Advertising Router 4.4.4.4."
+
+        - However, because Type 1 LSAs are blocked by the ABR, routers in Area 0 and Area 2 have no idea where Router 4.4.4.4 lives or how to reach it
+
