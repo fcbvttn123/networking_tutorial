@@ -94,3 +94,49 @@ show ip ospf neighbor
 show ip ospf interface
 show ip ospf database
 ```
+
+
+
+
+# OSPF Cost
+
+## The cost formula
+
+- `cost = reference bandwidth / interface bandwidth`
+
+- The `reference bandwidth` is 100 Mbps
+
+- Problem: `100 Mbps` Link (100 / 100 = **1**) and a `10 Gbps` Link (100 / 10000 = 0.1 which is **1**) have the same cost (**1**)
+
+## Cumulative Metric
+
+- Path cost is calculated as the sum of all **outbound interface** costs along the path to the destination
+
+## Inspect Interface Cost of a Router
+
+```bash 
+R1# show ip ospf interface G0/1
+    GigabitEthernet0/1 is up, line protocol is up 
+    Internet Address 192.168.10.1/24, Area 0, Attached via Interface Enable
+    Process ID 1, Router ID 10.1.1.1, Network Type BROADCAST, Cost: 1
+```
+
+## Modify OSPF Cost
+
+- Method 1: Change Reference Bandwidth (Recommended)
+
+    ```bash
+    R1(config)# router ospf 1
+    R1(config-router)# auto-cost reference-bandwidth 10000
+    ```
+
+- Method 2: Set Cost Directly on Interface
+
+    ```bash
+    R1(config)# interface gigabitethernet 0/0/0
+    R1(config-if)# ip ospf cost 45
+    ```
+
+    - Notes: we have to configure the same thing for the port of the neighbor router (the command has to be executed on both ends of the link)
+
+    - Example: R2 has interface G0/0/0 connected to R1 interface G0/0/0, we have to set cost 45 for R2 interface G0/0/0
