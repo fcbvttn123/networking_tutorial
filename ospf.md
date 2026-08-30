@@ -140,3 +140,31 @@ R1# show ip ospf interface G0/1
     - Notes: we have to configure the same thing for the port of the neighbor router (the command has to be executed on both ends of the link)
 
     - Example: R2 has interface G0/0/0 connected to R1 interface G0/0/0, we have to set cost 45 for R2 interface G0/0/0
+
+
+
+
+# Passive Interface
+
+- Prevent routing updates being propagated to **interfaces connected to users** and **loopback interface**
+
+    `R1(config-router)# passive-interface <interface-id>`
+
+- Tip: configuring all interfaces on a router as passive interfaces, then negating this command on each interface where OSPF updates need to be sent
+
+    ```bash
+    router ospf 1
+    passive-interface default
+    no passive-interface GigabitEthernet0/0
+    ```
+
+
+
+
+# Redistributing Default Route
+
+`R1(config-router)#default-information originate`
+
+- Only do this on the router connected to the ISP
+
+- No need to do it on the other routers
