@@ -286,3 +286,44 @@ Link ID         ADV Router      Age         Seq#       Checkbox Tag
 
         - However, because Type 1 LSAs are blocked by the ABR, routers in Area 0 and Area 2 have no idea where Router 4.4.4.4 lives or how to reach it
 
+
+
+
+# Broadcast Multi Access Network
+
+## What is a multi-access network
+
+- Multi-access networks, are networks that consist of more than 2 devices sharing the same media
+
+- In the example shown below, the three routers and three PCs are interconnected using the two switches at the center of the topology
+
+    ![Multi Access Area Network](./images/multi-access-netowrk.png)
+
+- This means that the interfaces on the routers that connect to the switches as well as the PCs are in the same subnet
+
+## Challenges in OSPF Broadcast multi-access networks
+
+- Multiple adjacencies
+
+    - Neighboring routers in OSPF usually create adjacencies with each other (point-to-point networks)
+
+    - In multi-area network, one router can have multiple adjacencies to other routers
+
+- Flooding of LSAs
+
+## Solutions to OSPF broadcast multi-access problems (`DR` and `BDR`)
+
+- One router is elected as DR, one router is elected as BDR
+
+- If a network of a router is down, the router will inform only the DR Router
+
+- If the DR Router is down, the BDR will be informed instead
+
+## Election of DR and BDR
+
+- First: elect the router with the highest OSPF priority as the DR
+
+- Second: Elect the router with the second highest OSPF priority as the BDR
+
+- Third: If the priorities are equal, the DR is elected based on the highest router ID
+
