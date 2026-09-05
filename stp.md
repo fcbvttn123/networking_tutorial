@@ -1,3 +1,33 @@
+# Contents
+
+- [Contents](#contents)
+- [BPDU (`hello` message)](#bpdu-hello-message)
+- [STP Convergence Process](#stp-convergence-process)
+- [Port Types](#port-types)
+  - [Root Port](#root-port)
+  - [Designated Ports](#designated-ports)
+  - [Non-designated Ports](#non-designated-ports)
+- [Port States](#port-states)
+  - [Blocking State](#blocking-state)
+  - [Listening State (Forward Delay Timer)](#listening-state-forward-delay-timer)
+  - [Learning State (Forward Delay Timer)](#learning-state-forward-delay-timer)
+  - [Forwarding State](#forwarding-state)
+- [STP Timers](#stp-timers)
+  - [Hello Time](#hello-time)
+  - [Max Age](#max-age)
+  - [Forward Delay](#forward-delay)
+- [Root Bridge Election](#root-bridge-election)
+- [STP Cost](#stp-cost)
+- [Verification Commands](#verification-commands)
+  - [`show spanning-tree` (Check STP status)](#show-spanning-tree-check-stp-status)
+  - [`show spanning-tree interface <interface_id>` (See STP details for an interface)](#show-spanning-tree-interface-interface_id-see-stp-details-for-an-interface)
+  - [`show spanning-tree detail` (Look for STP topology changes)](#show-spanning-tree-detail-look-for-stp-topology-changes)
+- [Todo: RP, NDP \& DP Selection Rule](#todo-rp-ndp--dp-selection-rule)
+- [RSTP](#rstp)
+
+
+
+
 # BPDU (`hello` message)
 
 - The `BPDU` (Bridge Protocol Data Unit) is broadcast by the switches
@@ -175,6 +205,56 @@
 - 1Gps: 4
 
 - 100Mps: 19
+
+
+
+
+# Verification Commands
+
+## `show spanning-tree` (Check STP status)
+
+```bash
+VLAN0001
+  Spanning tree enabled protocol rapid-pvst
+  Root ID    Priority    32769
+             Address     0011.2233.4455
+             Cost        4
+             Port        24(GigabitEthernet0/24)
+
+  Bridge ID  Priority    32769
+             Address     00aa.bbcc.ddee
+
+Interface           Role Sts Cost      Prio.Nbr Type
+------------------- ---- --- --------- -------- --------------------------------
+Gi0/1               Desg FWD 4         128.1    P2p
+Gi0/2               Desg FWD 4         128.2    P2p
+Gi0/24              Root FWD 4         128.24   P2p
+```
+
+## `show spanning-tree interface <interface_id>` (See STP details for an interface)
+
+```bash
+Vlan                Role Sts Cost      Prio.Nbr Type
+------------------- ---- --- --------- -------- --------------------------------
+VLAN0001             Root FWD 4         128.24   P2p
+
+Port 24 (GigabitEthernet0/24) of VLAN0001 is root forwarding
+  Port path cost 4, Port priority 128, Port Identifier 128.24
+  Designated root has priority 32769, address 0011.2233.4455
+  Designated bridge has priority 32769, address 0011.2233.4455
+  Designated port id is 128.24
+```
+
+## `show spanning-tree detail` (Look for STP topology changes)
+
+```bash
+VLAN0001 is executing the ieee compatible Spanning Tree protocol
+  Bridge Identifier has priority 32768, sysid 1, address 00aa.bbcc.ddee
+  Topology change flag not set, detected flag not set
+  Number of topology changes 12 last change occurred 00:05:31 ago
+          from GigabitEthernet0/24
+  Times:  hold 1, topology change 35, notification 2
+```
 
 
 

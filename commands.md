@@ -20,3 +20,16 @@ show ip ospf
 show ip ospf neighbor
 show ip ospf interface
 show ip ospf database
+
+# stp: specify root and secondary bridge
+SW(config)# spanning-tree vlan <VLAN_ID> root <primary | secondary>
+# stp: configure portfast
+SW(config)# interface <interface_name>
+SW(config-if)# switchport mode access
+SW(config-if)# spanning-tree portfast
+# verification commands
+show spanning-tree
+show spanning-tree summary
+show spanning-tree <VLAN_ID>
+show spanning-tree active
+show spanning-tree detail
