@@ -1,6 +1,7 @@
 # Contents
 
 - [Contents](#contents)
+- [STP Types](#stp-types)
 - [BPDU (`hello` message)](#bpdu-hello-message)
 - [STP Convergence Process](#stp-convergence-process)
 - [Port Types](#port-types)
@@ -24,6 +25,21 @@
   - [`show spanning-tree detail` (Look for STP topology changes)](#show-spanning-tree-detail-look-for-stp-topology-changes)
 - [Todo: RP, NDP \& DP Selection Rule](#todo-rp-ndp--dp-selection-rule)
 - [RSTP](#rstp)
+
+
+
+
+# STP Types
+
+- IEEE 802.1D
+
+- IEEE 802.1w (RSTP)
+
+- IEEE 802.1s (Multiple Spanning Tree)
+
+- Cisco proprietary - based on 802.1D (PVST+)
+
+- Cisco proprietary - based on 802.1w (RPVST+)
 
 
 
