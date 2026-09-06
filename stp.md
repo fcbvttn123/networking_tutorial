@@ -4,30 +4,30 @@
 - [STP Types](#stp-types)
 - [BPDU (`hello` message)](#bpdu-hello-message)
 - [STP Convergence Process](#stp-convergence-process)
-- [Port Types](#port-types)
+- [Port Types (Classic STP)](#port-types-classic-stp)
   - [Root Port](#root-port)
   - [Designated Ports](#designated-ports)
   - [Non-designated Ports](#non-designated-ports)
-- [Port States](#port-states)
+- [Port States (Classic STP)](#port-states-classic-stp)
   - [Blocking State](#blocking-state)
   - [Listening State (Forward Delay Timer)](#listening-state-forward-delay-timer)
   - [Learning State (Forward Delay Timer)](#learning-state-forward-delay-timer)
   - [Forwarding State](#forwarding-state)
 - [STP Timers](#stp-timers)
   - [Hello Time](#hello-time)
-  - [Max Age](#max-age)
+  - [Max Age (Classic STP)](#max-age-classic-stp)
+- [Max Age (RSTP)](#max-age-rstp)
   - [Forward Delay](#forward-delay)
 - [Root Bridge Election](#root-bridge-election)
-- [STP Cost](#stp-cost)
+- [Classic STP Cost](#classic-stp-cost)
 - [Verification Commands](#verification-commands)
   - [`show spanning-tree` (Check STP status)](#show-spanning-tree-check-stp-status)
   - [`show spanning-tree interface <interface_id>` (See STP details for an interface)](#show-spanning-tree-interface-interface_id-see-stp-details-for-an-interface)
   - [`show spanning-tree detail` (Look for STP topology changes)](#show-spanning-tree-detail-look-for-stp-topology-changes)
-- [Todo: RP, NDP \& DP Selection Rule](#todo-rp-ndp--dp-selection-rule)
 - [RSTP](#rstp)
   - [Differences](#differences)
   - [RSTP Cost](#rstp-cost)
-  - [Port States](#port-states-1)
+  - [Port States](#port-states)
   - [Port Roles](#port-roles)
 
 
@@ -124,7 +124,7 @@
 
 
 
-# Port Types
+# Port Types (Classic STP)
 
 ## Root Port
 
@@ -149,7 +149,7 @@
 
 
 
-# Port States
+# Port States (Classic STP)
 
 ## Blocking State
 
@@ -184,13 +184,21 @@
 
 - Default is 2 seconds
 
-## Max Age
+## Max Age (Classic STP)
 
 - What it is: How long a SW will keep a BPDU before considering it invalid
 
 - Default is 20 seconds 
 
 - If a SW does not hear from the root for 20 seconds, it recalculates the topology
+
+# Max Age (RSTP)
+
+- Switches send BPDUs every 2 seconds
+
+- If a neighbor misses 3 consecutive BPDUs (6 seconds), the link is declared down
+
+- RSTP will promote the Alternate Port to become the new Root Port immediately (0 seconds delay)
 
 ## Forward Delay
 
@@ -216,7 +224,7 @@
 
 
 
-# STP Cost
+# Classic STP Cost
 
 - 10Gps: 2
 
@@ -273,11 +281,6 @@ VLAN0001 is executing the ieee compatible Spanning Tree protocol
           from GigabitEthernet0/24
   Times:  hold 1, topology change 35, notification 2
 ```
-
-
-
-
-# Todo: RP, NDP & DP Selection Rule
 
 
 
