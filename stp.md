@@ -25,6 +25,10 @@
   - [`show spanning-tree detail` (Look for STP topology changes)](#show-spanning-tree-detail-look-for-stp-topology-changes)
 - [Todo: RP, NDP \& DP Selection Rule](#todo-rp-ndp--dp-selection-rule)
 - [RSTP](#rstp)
+  - [Differences](#differences)
+  - [RSTP Cost](#rstp-cost)
+  - [Port States](#port-states-1)
+  - [Port Roles](#port-roles)
 
 
 
@@ -34,6 +38,10 @@
 - IEEE 802.1D
 
 - IEEE 802.1w (RSTP)
+
+    - Faster Convergence
+    
+    - Run STP instance for all VLANs
 
 - IEEE 802.1s (Multiple Spanning Tree)
 
@@ -112,12 +120,6 @@
     - The SW sends BPDUs and receives none — but it does NOT “wait for confirmation.”
 
     - It becomes a DP by default because **it is the only bridge on that LINK**
-
-- When the RP is dead
-
-    - NDP Transitions to Listening
-
-    - Receiving BPDUs -> Learning State
 
 
 
@@ -282,8 +284,40 @@ VLAN0001 is executing the ieee compatible Spanning Tree protocol
 
 # RSTP
 
+## Differences
+
 - Every switch generates its own BPDUs every Hello Time interval (2 seconds), containing its current view of the topology. Switches do not wait for the Root Bridge to send a BPDU first
 
 - If a switch misses BPDUs from a neighbor for 3 consecutive Hello intervals (6 seconds), it immediately considers neighbor connectivity lost 
 
-    - and recalculates its topology—without waiting up to 20 seconds for a Max Age timer to expire
+    - and recalculates its topology, without waiting up to 20 seconds for a Max Age timer to expire
+
+## RSTP Cost
+
+- 10 Mbps = 2,000,000
+
+- 100 Mbps = 200,000
+
+- 1 Gbps = 20,000
+
+- 10 Gbps = 2000
+
+- 100 Gbps = 200
+
+## Port States
+
+- Discarding
+
+- Learning: send/receive BPDUs
+
+- Forwarding: send/receive BPDUs
+
+## Port Roles
+
+- RP and DP are the same with Classic STP
+
+- NDP is split into 2 roles: Alternate Port and Backup Port
+
+    - The backup port is only in use with a hub
+
+    - Because hub is not in use today, the backup port is rare
