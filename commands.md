@@ -1,14 +1,14 @@
 ```bash
 
-# routing
+# static routing
 Router(config)# show ip route
 Router(config)# ip route (network-address) (subnet-mask) (next-hop-ip-address / exit-interface)
 
-# configure loopback interface for the router ID of the OSPF domain
+# ospf: configure loopback interface for the router ID of the OSPF domain
 Router(config)# interface loopback 0
 Router(config-if)# ip address 1.1.1.1 255.255.255.255
 Router(config-if)# exit
-# ospf
+# ospf: basic configs
 R1(config)# router ospf <process_id> # enable OSPF
 R1(config-router)# router-id <unique_ip_address> # configure router ID for the router
 R1(config-router)# network <network_address> <wildcard_mask> area <area_ID> # advertise directly connected routes of the router
@@ -27,9 +27,27 @@ SW(config)# spanning-tree vlan <VLAN_ID> root <primary | secondary>
 SW(config)# interface <interface_name>
 SW(config-if)# switchport mode access
 SW(config-if)# spanning-tree portfast
-# verification commands
+# stp: verification commands
 show spanning-tree
 show spanning-tree summary
 show spanning-tree <VLAN_ID>
 show spanning-tree active
 show spanning-tree detail
+
+# etherchannel: reset ports to factory default (optional)
+SwitchA(config)# default interface range GigabitEthernet 1/0/1 - 2
+# etherchannel: group the physical member ports into channel-group 1
+SwitchA(config)# interface range GigabitEthernet1/0/1 - 2
+SwitchA(config-if-range)# description LACP Uplink to SwitchB
+SwitchA(config-if-range)# channel-group 1 mode active
+SwitchA(config-if-range)# exit
+# etherchannel: apply interface settings
+SwitchA(config)# interface Port-channel 1
+SwitchA(config-if)# description Trunk Channel to SwitchB
+SwitchA(config-if)# switchport trunk encapsulation dot1q
+SwitchA(config-if)# switchport mode trunk
+SwitchA(config-if)# switchport trunk allowed vlan 10,20,30
+SwitchA(config-if)# exit
+# etherchannel: verification
+SwitchA# show etherchannel summary
+SwitchA# show lacp neighbor
