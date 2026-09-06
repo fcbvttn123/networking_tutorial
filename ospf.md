@@ -53,7 +53,17 @@
 
 ## Hello
 
-- They are the **first messages** that are sent by routers that have been configured with OSPF
+- They are the **first messages** that are sent by routers that have been configured with OSPF (the `network` command)
+
+    - OSPF Hello packets are sent only out of **Layer 3 interfaces** (interfaces with an IP address assigned directly to them)
+
+    - `router ospf <process_id>`: initializes the OSPF process, create LSDB Structure, no `hello` packets are sent
+
+    - `network` command
+    
+        - The OSPF process scans the router's physical and logical interfaces
+
+        - `Hello` packets immediately begin transmitting out of the matching interfaces to the OSPF multicast address `224.0.0.5` (All OSPF Routers)
 
 - They use the **multicast IP address** specially **reserved for OSPF** which is `224.0.0.5`
 
