@@ -209,9 +209,23 @@ R1# show ip ospf interface G0/1
 
 `R1(config-router)#default-information originate`
 
-- Only do this on the router connected to the ISP
+- Only do this on the router (firewall) connected to the ISP
 
-- No need to do it on the other routers
+    - No need to do it on the Distribution Switch
+
+    - Firewall (Runs `default-information originate`)
+    
+        - The firewall actually knows how to get to the internet via its static default route pointing to the ISP
+        
+        - By configuring default-information originate on the firewall, it dynamically injects `0.0.0.0 /0` down to the distribution switch
+
+    - Distribution Switch (Does NOT run `default-information originate`)
+    
+        - The switch learns the default route dynamically via OSPF from the firewall
+        
+        - It doesn't have an internet connection of its own, so advertising a default route back to the firewall would create a routing loop
+
+- You DON'T manually configure `ip route 0.0.0.0 0.0.0.0 <firewall_interface>` on the Distribution Switch
 
 
 
