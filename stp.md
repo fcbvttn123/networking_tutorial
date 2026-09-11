@@ -29,6 +29,7 @@
   - [RSTP Cost](#rstp-cost)
   - [Port States](#port-states)
   - [Port Roles](#port-roles)
+  - [When a new SW is added](#when-a-new-sw-is-added)
 
 
 
@@ -114,6 +115,20 @@
     - Compares them
 
     - Updates its role accordingly
+
+    - Example
+
+      - Switch B receives a superior BPDU from the newly connected Switch A
+
+      - SW B compares SW A's BID against the current Root and agrees SW A is the Root
+
+      - SW B immediately updates its local Root ID to SW A and recalculates its root cost
+
+      - SW B relays this superior BPDU out all of its active DP to downstream SWs right away
+
+      - If the receiving port on SW B was already in Forwarding, it immediately becomes the RP and stays in Forwarding
+
+      - Any existing port that now needs to switch roles will enter the 30 seconds to transition LST, LRN and FWD
 
 - When a Computer is connected
 
@@ -324,3 +339,29 @@ VLAN0001 is executing the ieee compatible Spanning Tree protocol
     - The backup port is only in use with a hub
 
     - Because hub is not in use today, the backup port is rare
+
+## When a new SW is added
+
+- A new SW A sends a BPDU to SW B with the **Proposal** bit set, offering to make its connecting port a DP
+
+- SW B recognizes SW A's superior Bridge ID and accepts SW A as the new Root Bridge
+
+- The port connected to SW A immediately becomes SW B's new RP (but in discarding state)
+
+- To guarantee no temporary loops are created, SW B performs a **Sync**
+
+  - SW B immediately puts all non-edge DP into the Discarding state (blocking user traffic)
+
+  - Edge ports are not affected and stay Forwarding
+
+- Once SW B's non-edge ports are blocked and isolated, SW B sends an **Agreement** back to SW A
+
+- Upon receiving the Agreement, SW A transitions its port to Forwarding immediately (sub-second, no 30-second timers)
+
+- SW B's new RP also becomes Forwarding immediately (no 30-second timers)
+
+- SW B now sends a Proposal out its downstream ports to the next SW (SW C)
+
+- SW C performs a Sync on its ports, sends an Agreement back to SW B, and unblocks its link
+
+- As soon as SW B receives the Agreement from SW C, SW B's downstream port transitions immediately from Discarding to Forwarding
