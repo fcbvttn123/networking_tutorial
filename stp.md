@@ -4,6 +4,7 @@
 - [STP Types](#stp-types)
 - [BPDU (`hello` message)](#bpdu-hello-message)
 - [STP Convergence Process](#stp-convergence-process)
+- [Negotiation Order](#negotiation-order)
 - [Port Types (Classic STP)](#port-types-classic-stp)
   - [Root Port](#root-port)
   - [Designated Ports](#designated-ports)
@@ -135,6 +136,25 @@
     - The SW sends BPDUs and receives none — but it does NOT “wait for confirmation.”
 
     - It becomes a DP by default because **it is the only bridge on that LINK**
+
+
+
+
+# Negotiation Order
+
+- [1. Elect Root Bridge] ➔ [2. Assign Port Roles] ➔ [3. Transition Port States]
+
+- They happen in a sequential, dependent order, not all at once
+
+- The election and role assignments happen almost immediately upon receiving BPDUs
+
+- The 15-second timers exist only to hold non-designated ports in safety states while the topology stabilizes
+
+  - 15s Listening State: Ports are assigned their roles (RP, DP) right away, but they are held in Listening for 15 seconds
+
+  - 15s Learning State: Ports transition to Learning for another 15 seconds to populate their MAC address tables and avoid flooding frames
+
+  - **RSTP** completely eliminates the fixed 15-second Listening and Learning timers for point-to-point (P2p) links using a **Proposal/Agreement** handshake
 
 
 
