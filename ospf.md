@@ -159,6 +159,10 @@ show ip ospf database
 
 - Path cost is calculated as the sum of all **outbound interface** costs along the path to the destination
 
+- OSPF always selects the path with the lowest cumulative cost
+
+- Example: `O     192.168.50.0/24 [110/4] via 10.1.12.2, 00:04:12, GigabitEthernet0/0/1` -> cost 4
+
 ## Inspect Interface Cost of a Router
 
 ```bash 
