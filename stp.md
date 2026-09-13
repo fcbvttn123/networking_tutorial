@@ -30,6 +30,8 @@
   - [RSTP Cost](#rstp-cost)
   - [Port States](#port-states)
   - [Port Roles](#port-roles)
+  - [Why sending BPDUs in Discarding (and DP) is critical](#why-sending-bpdus-in-discarding-and-dp-is-critical)
+  - [RSTP Security \& Protection Features](#rstp-security--protection-features)
   - [When a new SW is added](#when-a-new-sw-is-added)
 
 
@@ -344,11 +346,11 @@ VLAN0001 is executing the ieee compatible Spanning Tree protocol
 
 ## Port States
 
-- Discarding
+- Discarding: the port drops data frames and does not learn MAC addresses, but it listens to BPDUs, and it can **send BPDUs in DP role**
 
-- Learning: send/receive BPDUs
+- Learning: port processes BPDUs and builds the MAC address table, but does not forward user traffic yet
 
-- Forwarding: send/receive BPDUs
+- Forwarding
 
 ## Port Roles
 
@@ -356,9 +358,29 @@ VLAN0001 is executing the ieee compatible Spanning Tree protocol
 
 - NDP is split into 2 roles: Alternate Port and Backup Port
 
-    - The backup port is only in use with a hub
+    - **Alternate Port** immediately takes over if the local Root Port fails
 
-    - Because hub is not in use today, the backup port is rare
+    - **Backup Port** is only in use with a hub, because hub is not in use today, the backup port is rare
+
+## Why sending BPDUs in Discarding (and DP) is critical
+
+- When a new point-to-point link brings up a connection between two SWs, both ports start in **Designated Discarding**
+
+- SW A sends a BPDU with the Proposal flag set while still in the **Discarding** state
+
+- SW B receives it, syncs its local ports, and responds with an Agreement
+
+- If ports in the Discarding state couldn't send BPDUs, SWs could never negotiate the **Proposal/Agreement handshake** to transition safely to **Forwarding**
+
+## RSTP Security & Protection Features
+
+- Edge Ports: `spanning-tree portfast`
+
+- BPDU Guard: `spanning-tree portfast bpduguard default`
+
+- Root Guard: `spanning-tree guard root`
+
+- Loop Guard: protect against unidirectional link failures by blocking ports that stop receiving expected BPDUs instead of transitioning them to Forwarding
 
 ## When a new SW is added
 
