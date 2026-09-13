@@ -4,6 +4,7 @@
 Router(config)# show ip route
 Router(config)# ip route (network-address) (subnet-mask) (next-hop-ip-address / exit-interface)
 
+
 # ospf: configure loopback interface for the router ID of the OSPF domain
 Router(config)# interface loopback 0
 Router(config-if)# ip address 1.1.1.1 255.255.255.255
@@ -21,6 +22,7 @@ show ip ospf neighbor
 show ip ospf interface
 show ip ospf database
 
+
 # stp: specify root and secondary bridge
 SW(config)# spanning-tree vlan <VLAN_ID> root <primary | secondary>
 # stp: configure portfast
@@ -33,6 +35,7 @@ show spanning-tree summary
 show spanning-tree <VLAN_ID>
 show spanning-tree active
 show spanning-tree detail
+
 
 # etherchannel: reset ports to factory default (optional)
 SwitchA(config)# default interface range GigabitEthernet 1/0/1 - 2
@@ -49,5 +52,19 @@ SwitchA(config-if)# switchport mode trunk
 SwitchA(config-if)# switchport trunk allowed vlan 10,20,30
 SwitchA(config-if)# exit
 # etherchannel: verification
-SwitchA# show etherchannel summary
-SwitchA# show lacp neighbor
+show etherchannel summary
+show lacp neighbor
+
+
+# nat: define the Inside Interface (facing your local network)
+Router(config)# interface GigabitEthernet0/0
+Router(config-if)# ip nat inside
+Router(config-if)# exit
+# nat: define the Outside Interface (facing the internet/ISP)
+Router(config)# interface GigabitEthernet0/1
+Router(config-if)# ip nat outside
+Router(config-if)# exit
+# nat: create an Access Control List (ACL) to permit your local subnet
+Router(config)# access-list 1 permit 192.168.1.0 0.0.0.255
+# nat: enable PAT overloading the outside interface
+Router(config)# ip nat inside source list 1 interface GigabitEthernet0/1 overload
