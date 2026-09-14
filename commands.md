@@ -92,3 +92,19 @@ Router-1(config-if)# vrrp 10 track 1 decrement 30
 # FHRP: verification
 Router-1# show vrrp brief
 Router-1# show vrrp 10
+
+
+# SNMP: configure Read-Only (RO) and Read-Write (RW) Community Strings
+Router(config)# snmp-server community MyRoSecret123 RO 10
+Router(config)# snmp-server community MyRwSecret456 RW 10
+# SNMP: define an Access Control List (ACL) to restrict NMS management IPs
+Router(config)# access-list 10 permit 192.168.1.50
+Router(config)# access-list 10 permit 192.168.1.51
+Router(config)# access-list 10 deny any log
+# SNMP: define Switch Location and Contact Info (Optional metadata)
+Router(config)# snmp-server location DataCenter-Rack-04
+Router(config)# snmp-server contact Admin-Team <admin@company.com>
+# SNMP: enable SNMP Traps/Informs
+Router(config)# snmp-server enable traps
+# SNMP: specify the SNMP Server (NMS) Receiver IP and Community String
+Router(config)# snmp-server host 192.168.1.50 version 2c MyRoSecret123
