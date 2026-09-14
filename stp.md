@@ -58,7 +58,11 @@
 
 # BPDU (`hello` message)
 
-- The `BPDU` (Bridge Protocol Data Unit) is broadcast by the switches
+- The `BPDU` (Bridge Protocol Data Unit) is **multicast** by the switches
+
+  - The standard IEEE 802.1D address for standard STP, RSTP, and MSTP is `01:80:C2:00:00:00`
+
+  - Cisco's PVST uses multicast address `01-00-0C-CC-CC-CD` for non-native VLANs
 
 - The `BPDU`, contains
 

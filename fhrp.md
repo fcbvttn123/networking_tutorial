@@ -149,7 +149,11 @@ GigabitEthernet0/0/1 - Group 10
 
 # Hello Message
 
-- These packets are transmitted out of the router's Layer 3 Interface (which has FHRP enabled)
+- These packets are transmitted out of the router's Layer 3 Interface (which has FHRP enabled) using multicast addresses
+
+    - **VRRP** uses `224.0.0.18`
+
+    - **HSRP** uses `224.0.0.102`
 
 - `HSRP` and `GLBP` use **UDP** as their transport layer protocol, while `VRRP` uses **Raw IP** (IP Protocol = 112) instead
 
