@@ -68,3 +68,27 @@ Router(config-if)# exit
 Router(config)# access-list 1 permit 192.168.1.0 0.0.0.255
 # nat: enable PAT overloading the outside interface
 Router(config)# ip nat inside source list 1 interface GigabitEthernet0/1 overload
+
+
+# FHRP: master
+Router-1(config)# interface GigabitEthernet0/0/1
+Router-1(config-if)# ip address 192.168.10.2 255.255.255.0
+Router-1(config-if)# no shutdown
+Router-1(config-if)# vrrp 10 ip 192.168.10.1
+Router-1(config-if)# vrrp 10 priority 120
+Router-1(config-if)# vrrp 10 preempt
+Router-1(config-if)# vrrp 10 timers advertise 1
+# FHRP: standby
+Router-2(config)# interface GigabitEthernet0/0/1
+Router-2(config-if)# ip address 192.168.10.3 255.255.255.0
+Router-2(config-if)# no shutdown
+Router-2(config-if)# vrrp 10 ip 192.168.10.1
+Router-2(config-if)# vrrp 10 priority 100
+Router-2(config-if)# vrrp 10 preempt
+# FHRP: if Router-1's WAN uplink (Gi0/0/0) drops, you want it to decrease its priority so Router-2 takes over as Master automatically
+Router-1(config)# track 1 interface GigabitEthernet0/0/0 line-protocol
+Router-1(config-if)# interface GigabitEthernet0/0/1
+Router-1(config-if)# vrrp 10 track 1 decrement 30
+# FHRP: verification
+Router-1# show vrrp brief
+Router-1# show vrrp 10
