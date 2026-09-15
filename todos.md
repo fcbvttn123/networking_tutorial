@@ -2,9 +2,9 @@
 
     - Protocols: CDP/LLDP, DTP/VTP, NTP, Syslog, SSH, FTP/TFTP, ACL
 
-    - WAN Architecture Series
+    - CCNA: VRF
 
-    - Others
+    - Other Videos
 
 - Pracical Network
 

@@ -1,3 +1,19 @@
+# Contents
+
+- [Contents](#contents)
+- [SNMP Components](#snmp-components)
+  - [SNMP Manager](#snmp-manager)
+  - [SNMP Agent](#snmp-agent)
+  - [MIB](#mib)
+  - [SNMP Messages: GET, TRAP/Inform, SET](#snmp-messages-get-trapinform-set)
+- [SNMP Versions](#snmp-versions)
+  - [SNMPv1](#snmpv1)
+  - [SNMPv2c](#snmpv2c)
+  - [SNMPv3](#snmpv3)
+
+
+
+
 # SNMP Components
 
 ## SNMP Manager
@@ -16,7 +32,13 @@
 
 - A structured database of what can be monitored
 
-## SNMP Messages
+    - **Object Identifier (OID)**: every piece of information inside an MIB is assigned a unique, dotted numerical sequence called an OID (e.g., `1.3.6.1.2.1.1.1.0` for system description)
+
+    - Dynamic translation: When your monitoring server sends an **SNMP request** for OID `1.3.6.1.2.1.2.2.1.10`, the device’s SNMP Agent receives the request
+
+    - Internal lookup: The SNMP Agent looks up that OID in its internal code, fetches the live memory value directly from the network ASIC or system kernel
+
+## SNMP Messages: GET, TRAP/Inform, SET
 
 - `GET`: request information
 
@@ -79,6 +101,8 @@
 - `access-list 10 permit 192.168.1.50`
 
     - Restrict SNMP traffic so only authorized monitoring servers (e.g., 192.168.1.50) can talk to the SNMP agent
+
+    - `log`: sends an informational logging message to the console or syslog server when a packet triggers this rule
 
 - `snmp server {location | contact}`
 
