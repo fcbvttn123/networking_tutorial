@@ -35,3 +35,18 @@
 - Access the VM by typing its address on the browser, using "admin" as the username
 
 - Add a new lab
+
+
+# Lab Features
+
+- Inter-VLAN Routing
+
+- LACP EtherChannel
+
+- RPVST+ & VRRP Sync
+
+- OSPF (multi-area)
+
+- SNMP monitoring & Syslog collection
+
+- Ansible Network Automation
