@@ -10,11 +10,17 @@
 
 - Offices are connected to Service Provider via **Ethernet (fiber)**
 
-## CATV and DSL
+## CATV, DSL and Modem
 
 - They are technologies used by consumers for home internet access
 
 - DSL - Digital Subscriber Line
+
+    - A DSL Modem (modulator-demodulator) is used to convert data into a format to be sent over the phone lines
+
+    - The modem can be integrated into the router, or a separate device
+
+- CATV is used for TV Service and can be used to provide internet access
 
 
 # Leased Line
@@ -81,3 +87,47 @@
 - Their WAN interfaces will be in the same subnet
 
 - If a routing protocol is used, the two CE routers will peer directly with each other
+
+
+# Internet VPNs
+
+## Sire-to-site VPN using IPsec
+
+- GRE over IPsec
+
+    - IPsec VPN doesn't support broadcast or multicast traffic (e.g., OSPF)
+
+    - GRE creates tunnels like IPsec, but doesn't encrypt the original packet => **GRE over IPsec** is the solution
+
+    - The packet is encapsulated by a **GRE Header** and a **new IP Header**, then the GRE Packet is encrypted and encapsulated within an **IPsec VPN Header** and **new IP Header**
+
+- DMVPN
+
+    - A Cisco solution which allows routers to dynamically create a full mesh of IPsec tunnels without manually configure every single tunnel
+
+    - Step 1: configure VPN for each **spoke router** to the **hub router**
+
+    - Step 2: the hub router gives each spoke router information about how to form an IPsec tunnel with other spoke routers to create a full mesh topology
+
+## Remote-access VPNs using TLS
+
+
+# Configure GRE Tunnels
+
+```bash
+# configure tunnel source (inside interface, not WAN), tunnel destination (R2 WAN Interface) and tunnel IP (IP for the tunnel only - /30 network, not internal LANs)
+R1(config)# interface tunnel 0
+R1(config-if)# tunnel source g0/0/0
+R1(config-if)# tunnel destination 200.0.0.2
+R1(config-if)# ip address 192.168.1.1 255.255.255.252
+R1(config-if)# do show ip interface brief # view the tunnel interface
+
+# configure static route to form the tunnel with R2
+R1(config)# ip route 0.0.0.0 0.0.0.0 <R1 WAN Interface>
+R1(config)# do show ip route # you should see a route: C  192.168.1.0 /30 is directly connected, Tunnel0
+
+# configure OSPF to share internal subnets
+R1(config)# router ospf 1
+R1(config-router)# network 192.168.1.1 0.0.0.0 area 0
+R1(config-router)# network 10.0.1.1 0.0.0.0 area 0
+```
