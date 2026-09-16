@@ -34,7 +34,15 @@
 
 - Source NAT (`SNAT`) changes the source IP address of an outgoing packet
 
-- Destination NAT (`DNAT`) changes the destination IP address of an incoming packet
+- Destination NAT (`DNAT`) changes the destination IP address and port of an incoming packet
+
+    - Example: a data packet sent to your public IP address and a specific port (e.g., sending an HTTP request to `203.0.113.5:80`)
+
+    - The router or firewall receives the packet on its public interface
+
+    - The router looks at its DNAT rules and replaces the public destination IP and port with the private internal IP and port of your server (`192.168.1.50:80`)
+
+    - When the private server replies, the router reverses the process—rewriting the source of the reply back to the public IP address
 
 # Cisco NAT Order of Operations
 
