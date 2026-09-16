@@ -2,9 +2,7 @@
 
     - Protocols: CDP/LLDP, DTP/VTP, NTP, Syslog, SSH, FTP/TFTP, ACL
 
-    - CCNA: VRF
-
-    - Other Videos
+    - Other CCNA Videos: Voice IP, QoS, WLAN
 
 - Pracical Network
 
