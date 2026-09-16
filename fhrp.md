@@ -82,6 +82,10 @@ Vlan    Mac Address       Type        Ports
 
         - Without gratuitous ARP, the SW will still believe the Virtual MAC is on the old Router port
 
+- End clients save the Virtual MAC address associated with the Virtual IP (Default Gateway) in their ARP table
+
+- Networking devices store BOTH the Physical MACs and the Virtual MAC in their MAC address table
+
 
 
 
