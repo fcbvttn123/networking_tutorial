@@ -70,3 +70,14 @@
 
 
 # Configure IPv6 Addresses
+
+```bash
+# allow router to perform IPv6 routing
+R1(config)# ipv6 unicast routing
+# configure interface
+R1(config)# interface g0/0
+R1(config-if)# ipv6 address 2001:db8:0:0::1 /64
+R1(config-if)# no shutdown
+# verification
+R1# show ipv6 interface brief
+```
