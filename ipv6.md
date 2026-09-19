@@ -54,7 +54,7 @@
 
     - Example: `300D:00F2:0B34:2100:0000:0000:1200:0001 /56`
 
-    - `300D`: 16 bits, `00F2`: 32 bits, `2100`: 48 bits, `2`: 52 bits, `1`: 56 bits
+    - `300D`: 16 bits, `00F2`: 32 bits, `0B34`: 48 bits, `2`: 52 bits, `1`: 56 bits
 
     - Network Portion: `300D:F2:B34:2100:: /56`
 
