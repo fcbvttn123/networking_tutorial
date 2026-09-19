@@ -32,6 +32,16 @@
   - [Challenges in OSPF Broadcast multi-access networks](#challenges-in-ospf-broadcast-multi-access-networks)
   - [Solutions to OSPF broadcast multi-access problems (`DR` and `BDR`)](#solutions-to-ospf-broadcast-multi-access-problems-dr-and-bdr)
   - [Election of DR and BDR](#election-of-dr-and-bdr)
+- [How OSPF works in details](#how-ospf-works-in-details)
+  - [Down State (hello packet: R1 -\> R2)](#down-state-hello-packet-r1---r2)
+  - [Init State](#init-state)
+  - [2-way State (hello packet: R1 \<-\> R2)](#2-way-state-hello-packet-r1---r2)
+  - [Exstart State (DBD packet)](#exstart-state-dbd-packet)
+  - [Exchange State (DBD packet)](#exchange-state-dbd-packet)
+  - [Loading State (LSR, LSU, LSAack)](#loading-state-lsr-lsu-lsaack)
+  - [Full State](#full-state)
+  - [How OSPF Handles New Routes](#how-ospf-handles-new-routes)
+- [View OSPF State and Dead Time (`show ip ospf neighbor`)](#view-ospf-state-and-dead-time-show-ip-ospf-neighbor)
 
 
 
@@ -520,3 +530,124 @@ External Route Tag: 0
 
 - Third: If the priorities are equal, the DR is elected based on the highest router ID
 
+
+
+
+# How OSPF works in details
+
+## Down State (hello packet: R1 -> R2)
+
+- OSPF is activated on R1's G0/0 interface
+
+- It sends an OSPF hello message to `224.0.0.5`
+
+    ```bash
+    # the hello message
+    My Router ID: 1.1.1.1
+    Neighbor Router ID: 0.0.0.0
+    ```
+
+- It doesn't know about any OSPF neighbors yet, so the current **neighbor state** is Down
+
+## Init State
+
+- When R2 receives the Hello packet, it will **add an entry for R1** to its OSPF **neighbor table**
+
+- In R2's neighbor table, **the relationship with R1** is now in the Init state
+
+- **Init state =** Hello packet received, but R2 own router ID (`2.2.2.2`) is not in the Hello packet
+
+## 2-way State (hello packet: R1 <-> R2)
+
+- R2 sends a Hello packet containing the RID of both routers. **R1 inserts R2 into its OSPF neighbor table** in the 2-way state
+
+    ```bash
+    # the hello message
+    My Router ID: 2.2.2.2
+    Neighbor Router ID: 1.1.1.1
+    ```
+
+- R1 sends another Hello message, this time containing R2's RID. **Now both routers are in the 2-way state**
+
+    ```bash
+    # the hello message
+    My Router ID: 1.1.1.1
+    Neighbor Router ID: 2.2.2.2
+    ```
+
+- The 2-way state means **the router has received a Hello packet with its own Router ID in it**
+
+- If both routers reach the 2-way state, it means that all of the conditions have been met for them to become OSPF neighbors
+
+    - They are now ready to share LSAs to build a common LSDB
+
+## Exstart State (DBD packet)
+
+- The two routers will now **prepare** (for the next state) to exchange information about their LSDB
+
+- Before that, they have to choose which one will start the exchange
+
+  - They do this in the Exstart state
+
+  - The router with the higher RID will become the **Master** and initiate the exchange
+  
+  - The router with the lower RID will become the **Slave**
+
+  - To decide the Master and Slave, they exchange **DBD** (Database Description) packets
+
+    - R1 sends DBD claiming it's the Master
+
+    - R2 said it's the Master because of the higher Router ID
+
+## Exchange State (DBD packet)
+
+- In the Exchange state, the routers exchange DBDs which contain a list of the LSAs in their LSDB
+
+- **These DBDs do not include detailed information about the LSAs**, just basic information
+
+- The routers compare the information in the DBD they received, to the information in their own LSDB, **to determine which LSAs they must receive** from their neighbor
+
+## Loading State (LSR, LSU, LSAack)
+
+- In the Loading state, routers send Link State Request (LSR) messages asking their neighbors to send them any LSAs they don't have
+
+- **LSAs are sent in Link State Update (LSU) messages**
+
+- The routers send LSAck messages to acknowledge that they received the LSAs
+
+## Full State
+
+- In the Full state, the routers have a full OSPF adjacency and identical LSDBs
+
+- They continue to send and listen for Hello packets (**every 10 seconds** by default) to maintain the neighbor adjacency
+
+- Every time a Hello packet is received, the 'Dead' timer (**40 seconds** by default) is reset
+
+- If the Dead timer counts down to 0 and no Hello message is received, the neighbor is removed
+
+- The routers will continue to share LSAs as the network changes to make sure each router has a complete and accurate map of the network (LSDB)
+
+## How OSPF Handles New Routes
+
+- When a network change occurs, the router **bypasses the initial dynamic state sequence** (Exstart/Exchange/Loading) and handles the change directly
+
+- The router detects a new active link or interface matching an OSPF network statement
+
+- The local router constructs a new LSA detailing the new subnet, mask, and link metric
+
+- The router encapsulates the new LSA inside a LSU packet and sends it out
+
+- Upon receiving the LSU, neighbor routers update their local LSDB, recompute the SPF algorithm, and send back a LSAck packet to confirm receipt
+
+
+
+
+# View OSPF State and Dead Time (`show ip ospf neighbor`)
+
+```bash
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+192.168.1.2       1   FULL/DR         00:00:35    10.1.1.2        GigabitEthernet0/0
+192.168.1.3       1   FULL/BDR        00:00:32    10.1.1.3        GigabitEthernet0/0
+192.168.1.4       1   2WAY/DROTHER    00:00:38    10.1.1.4        GigabitEthernet0/0
+10.2.2.2          0   FULL/ -         00:00:36    10.2.2.2        GigabitEthernet0/1
+```
