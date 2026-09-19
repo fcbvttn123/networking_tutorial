@@ -81,3 +81,96 @@ R1(config-if)# no shutdown
 # verification
 R1# show ipv6 interface brief
 ```
+
+
+# IPv6 Addresses (EUI-64)
+
+## EUI-64 Interface Identifier
+
+- EUI stands for Extended Unique Identifier
+
+- (Modified) EUI-64 is a method of converting a MAC address (48 bits) into **a 64-bit interface identifier**
+
+- This interface identifier can then become the **host portion** of a `/64` IPv6 address
+
+- **The router does the conversion automatically**
+
+## How to convert the MAC Address
+
+- Divide the MAC address in half
+
+    `1234 5678 90AB` -> `123456` | `7890AB`
+
+- Insert FFFE in the middle
+
+    `1234 56FF FE78 90AB`
+
+- Invert the 7th bit: 0 to 1 or 1 to 0
+
+    The 7th bit is inside the hex `2` which is `0010` in binary
+
+    The 7th bit is `1` which is inverted to `0` -> `0000`
+
+    `1034 56FF FE78 90AB`
+
+## Configuration
+
+```bash
+R1(config)# interface g0/0
+R1(config-if)# ipv6 address 2001:db8:: /64 eui-64
+```
+
+
+# Address Types
+
+## Global Unicast Addresses
+
+- They are public addresses: `2000::/3`
+
+- No NAT Needed: IPv6 assigns globally unique public addresses **directly to individual devices**
+
+- Allocation Structure:
+
+    - `/32` to `/48`: Regional Internet Registries (RIRs) give these large blocks to ISP and enterprise networks
+
+    - `/56` or `/48`: ISPs typically assign these sizes to subscriber sites or homes
+
+    - `/64`: This standard size is used for an individual local subnet or network segment
+
+## Unique Local Addresses
+
+- They are private addresses: `fd00::/8`
+
+- The **first 2 hex digits** are always `FD`
+
+- Components: `FD45:93AC:8A8F:0001:0000:0000:0000:0001`
+
+    - `FD` means it is a private address
+
+    - `45:93AC:8A8F`: 40 bits of the address form a pseudo-random string to guarantee uniqueness
+
+    - `0001`: 16 bits to split the network into subnets
+
+    - `Interface ID`: 64 bits identify the specific device on the network link
+
+## Link Local Addresses
+
+- It is a unicast IP address, used exclusively for communication between nodes on the same local network segment (link)
+
+- Packets sent using a LLA are non-routable: routers will never forward LLA traffic outside the local network segment
+
+- Mandatory Status: Every active IPv6-enabled interface automatically generates a Link-Local address
+
+- Scope: valid only within the single physical or VLAN broadcast domain
+
+- Address Prefix
+
+    - Always begins with `fe80::/10`
+    
+    - In practice, because the next 54 bits are filled with zeros, the address almost always starts with `fe80::/64`
+
+## Multicast Addresses
+
+- IPv6 doesn't use broadcast, we have to use some multicast addresses to send to all devices
+
+- Range: `FF00:: /8`
