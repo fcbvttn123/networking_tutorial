@@ -174,3 +174,21 @@ R1(config-if)# ipv6 address 2001:db8:: /64 eui-64
 - IPv6 doesn't use broadcast, we have to use some multicast addresses to send to all devices
 
 - Range: `FF00:: /8`
+
+## Anycast Addresses
+
+- In IPv6, anycast is an address type where **the same IPv6 address** is assigned to multiple devices
+
+- Packets sent to that address are delivered to the nearest device (according to the routing protocol's view of the network)
+
+- How Anycast Works
+
+    - Imagine three DNS servers in different cities: Toronto, New York and London
+
+    - All three servers are configured with the same IPv6 anycast address: `2001:db8:53::53`
+
+    - When a client sends a packet to: `2001:db8:53::53`
+
+    - The routers determine which server is closest according to the routing table
+
+- IPv6 does not have a separate address format that identifies an address as anycast
