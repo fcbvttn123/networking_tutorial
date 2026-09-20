@@ -176,6 +176,24 @@ R1(config-if)# ipv6 address 2001:db8:: /64 eui-64
 
     - `Interface ID`: 64 bits identify the specific device on the network link
 
+- Why do we need ULA if we have GUA?
+
+    - **ULA doesn't exist because IPv6 ran out of addresses like in IPv4**
+
+        - IPv6 has an enormous address space. ULA exists because private/internal addressing is still useful as a network-design concept
+
+    - You could use GUA everywhere: `users - 2001:db8:1234:10::/64`, `servers - 2001:db8:1234:20::/64`
+
+        - But perhaps you also have an internal management network: `fd12:3456:789a:30::/64`
+
+        - You don't necessarily want that management network to be **globally routable**
+
+- Why not just use GUA for everything?
+
+    - You can use GUA for internal devices
+
+    - But consider what happens if your ISP changes your IPv6 prefix
+
 ## Link Local Addresses
 
 - It is a unicast IP address, used exclusively for communication between nodes on the same local network segment (link)
