@@ -202,6 +202,12 @@ R1(config-if)# ipv6 address 2001:db8:: /64 eui-64
 
 - Mandatory Status: Every active IPv6-enabled interface automatically generates a Link-Local address
 
+    ```bash
+    PC1      fe80::1a2b:3c4d:5e6f:7a8b
+    PC2      fe80::9abc:def0:1234:5678
+    Router   fe80::1111:2222:3333:4444
+    ```
+
 - Scope: valid only within the single physical or VLAN broadcast domain
 
 - Address Prefix
@@ -209,6 +215,14 @@ R1(config-if)# ipv6 address 2001:db8:: /64 eui-64
     - Always begins with `fe80::/10`
     
     - In practice, because the next 54 bits are filled with zeros, the address almost always starts with `fe80::/64`
+
+- Why we need them: **many IPv6 functions rely on link-local communication**
+
+    - Neighbor Discovery: IPv6 replaced ARP with **Neighbor Discovery Protocol (NDP)**, NDP messages use link-local communication
+
+    - Router Discovery: helps a host learns IPv6 and default gateway using **Router Advertisement** (RA)
+
+    - Routing Protocols: OSPFv3 neighbors often form adjacencies using these link-local addresses
 
 ## Multicast Addresses
 
