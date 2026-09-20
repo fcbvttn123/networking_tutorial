@@ -93,7 +93,13 @@ R1# show ipv6 interface brief
 
 - This interface identifier can then become the **host portion** of a `/64` IPv6 address
 
-- **The router does the conversion automatically**
+- **The Router/PCs does the conversion automatically**
+
+- Instead of manually assigning the entire IPv6 address to every host
+
+    - a router can **advertise** (Router Advertisement) a `/64` prefix
+    
+    - and hosts can automatically **generate their own interface ID**, potentially using `EUI-64`
 
 ## How to convert the MAC Address
 
@@ -127,8 +133,6 @@ R1(config-if)# ipv6 address 2001:db8:: /64 eui-64
 
 - They are public addresses: `2000::/3`
 
-- No NAT Needed: IPv6 assigns globally unique public addresses **directly to individual devices**
-
 - Allocation Structure:
 
     - `/32` to `/48`: Regional Internet Registries (RIRs) give these large blocks to ISP and enterprise networks
@@ -136,6 +140,25 @@ R1(config-if)# ipv6 address 2001:db8:: /64 eui-64
     - `/56` or `/48`: ISPs typically assign these sizes to subscriber sites or homes
 
     - `/64`: This standard size is used for an individual local subnet or network segment
+
+- No NAT Needed: IPv6 assigns globally unique public addresses **directly to individual devices**
+
+    - With IPv6, your ISP can give your network an IPv6 prefix: `2001:db8:1234:5678::/64`
+
+    - Your devices can then have their own globally routable addresses
+
+        ```bash
+        PC1      2001:db8:1234:5678::10
+        Laptop   2001:db8:1234:5678::20
+        Phone    2001:db8:1234:5678::30
+        Server   2001:db8:1234:5678::40
+        ```
+
+    - Doesn't that make IPv6 devices exposed to the Internet?
+
+        - Having a globally routable address does not mean the Internet can automatically connect to my computer
+
+        - Your IPv6 router/firewall normally has firewall rules controlling inbound traffic
 
 ## Unique Local Addresses
 
