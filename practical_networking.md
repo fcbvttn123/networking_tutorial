@@ -4,10 +4,17 @@
 - [Networking Devices](#networking-devices)
   - [Access Layer](#access-layer)
   - [Distribution Layer](#distribution-layer)
+  - [Firewall](#firewall)
   - [Other Devices](#other-devices)
 - [Access/Distribution Layer Design](#accessdistribution-layer-design)
   - [Cisco StackWise vs Cisco StackWise Virtual](#cisco-stackwise-vs-cisco-stackwise-virtual)
   - [STP in Stacking Technology](#stp-in-stacking-technology)
+- [Firewall Design](#firewall-design)
+  - [HA with Direction Connection](#ha-with-direction-connection)
+  - [Connect to Distribution Layer](#connect-to-distribution-layer)
+  - [Transit VLAN and IP](#transit-vlan-and-ip)
+  - [FireCluster Active/Passive Setup](#firecluster-activepassive-setup)
+  - [Connect to ISP](#connect-to-isp)
 - [Switch Licensing](#switch-licensing)
   - [Licensing Type](#licensing-type)
   - [What Happens When the License Expires?](#what-happens-when-the-license-expires)
@@ -53,6 +60,24 @@
 
 - StackWise-1T
 
+## Firewall
+
+- WatchGuard Firebox M390
+
+    - Firewall Throughput: Up to 18 Gbps
+
+    - UTM Throughput: Up to 2.4 Gbps (with security services enabled)
+
+    - Interfaces: 8 x Gigabit Ethernet ports standard, with 1 expansion slot for optional modules (such as 1 Gb copper, SFP, or SFP+ fiber slots)
+
+    - Memory & Storage: 8 GB RAM and 64 GB SSD
+
+- The Firebox M390 operates via flexible subscription bundles that turn the appliance into a comprehensive **Unified Threat Management** (UTM) solution
+
+    - **Basic Security Suite** license: Includes Intrusion Prevention Service (IPS), Gateway AntiVirus, WebBlocker, Application Control, spamBlocker, and standard support
+
+    - **Total Security Suite**: Adds advanced protection features like cloud sandboxing (APT Blocker), DNSWatch, and ThreatSync XDR capabilities
+
 ## Other Devices
 
 - IP phones
@@ -89,6 +114,82 @@
     - connecting a cheap unmanaged switch
 
     - creating a loop through a wireless bridge
+
+
+# Firewall Design
+
+## HA with Direction Connection
+
+- With ~200 users, the goal is **high availability**, not firewall load balancing
+
+- Active/Passive is simpler, easier to troubleshoot, and is the most common WatchGuard deployment
+
+- WatchGuard's own documentation notes that Active/Passive provides HA while one unit remains standby until a failover occurs
+
+- WatchGuard strongly recommends **direct connections** rather than placing switches between the cluster interfaces
+
+## Connect to Distribution Layer
+
+- Firebox 1
+
+    ```bash
+    eth0 -> Cluster Link
+    eth1 -> Backup Cluster Link
+
+    eth2 -> Dist1
+    eth3 -> Dist2
+    ```
+
+- Firebox 2
+
+    ```bash
+    eth0 -> Cluster Link
+    eth1 -> Backup Cluster Link
+
+    eth2 -> Dist1
+    eth3 -> Dist2
+    ```
+
+- Firebox LACP: `eth2 + eth3` on each firewall become an LACP interface
+
+## Transit VLAN and IP
+
+- The Firebox Cluster has a VIP `172.16.255.1 /29` - 2 firebox share the same VIP
+
+- The Distribution Layer has SVI 999 `172.16.255.2 /29` - SVI, not routed port 
+
+- All ports of the distribution layer and the firebox are access port `VLAN 999`
+
+## FireCluster Active/Passive Setup
+
+- Requirements
+
+    - Total Security Suite (TSS) on the primary unit
+
+    - Standard Support on the secondary unit (if you want the most cost-effective HA deployment)
+
+    - Same Fireware version on both appliances
+
+    - Two dedicated cluster links between the firewalls
+
+- Cluster links
+
+    ```bash
+    M390-A eth0 <----> M390-B eth0
+    M390-A eth1 <----> M390-B eth1
+    ```
+
+- Configuration
+
+    - Open `Policy Manager`
+
+    - Then `FireCluster` → `Setup`
+
+    - Select `Active/Passive`
+
+## Connect to ISP
+
+- **Each firebox has 1 port** connected to the **Access Switch** of the ISP
 
 
 # Switch Licensing
