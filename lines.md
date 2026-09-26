@@ -6,22 +6,6 @@
 
   - A **single console line** means **only one single console connection** at once
 
-- Configure the console line to use **a password** for auth
-
-    ```bash
-    R1(config)# line console 0
-    R1(config-line)# password <your_password>
-    R1(config-line)# login # auth using configured password
-    ```
-
-- Configure the console line to use **an account of the device** for auth
-
-    ```bash
-    R1(config)# username <your_username> secret <password>
-    R1(config)# line console 0
-    R1(config-line)# login local
-    ```
-
 
 # VTY Lines
 
@@ -40,6 +24,25 @@
     - `R1(config-line)# transport input telnet ssh`
     - `R1(config-line)# transport input all`
     - `R1(config-line)# transport input none`
+
+
+# Line Auth Method `login <method>`
+
+- Configure the console/telnet line to use **a password** for auth (cannot use this for SSH, **only Console and Telnet**)
+
+    ```bash
+    R1(config)# line console 0
+    R1(config-line)# password <your_password>
+    R1(config-line)# login # auth using configured password
+    ```
+
+- Configure the line to use **an account of the device** for auth
+
+    ```bash
+    R1(config)# username <your_username> secret <password>
+    R1(config)# line console 0
+    R1(config-line)# login local
+    ```
 
 
 # Configure ACL for the line `access-class`

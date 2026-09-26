@@ -1,8 +1,10 @@
+- Next: Port Security, DHCP Snooping, Dynamic ARP Inspection, SSH, FTP/TFTP
+
 - CCNA Videos
 
-    - Protocols: CDP/LLDP, DTP/VTP, NTP, Syslog, SSH, FTP/TFTP, ACL
+    - Protocols: RIP & EIGRP, CDP/LLDP, DTP/VTP, NTP, Syslog, ACL
 
-    - Other CCNA Videos: Voice IP, QoS, WLAN
+    - Other CCNA Videos: Floating Static Routes, IPv6 (day 3), WLAN
 
 - Pracical Network
 
