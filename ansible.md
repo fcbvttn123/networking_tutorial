@@ -45,3 +45,79 @@ write memory
 ```
 
 Set SW2's IP address to `192.168.1.12`
+
+## Prepare the Ansible Control Node
+
+- Install Ansible and the Cisco IOS collection
+
+- Log into your Linux control node console, set up static IP 192.168.1.100/24 on eth0, and run:
+
+    ```bash
+    # Update packages and install python/pip
+    sudo apt update && sudo apt install -y python3-pip git
+
+    # Install Ansible core and Cisco collection
+    pip3 install ansible
+    ansible-galaxy collection install cisco.ios
+    ```
+
+
+# Inventory
+
+## File Structure
+
+```bash
+project/
+├── inventory.yml
+├── group_vars/
+│   ├── all.yml
+│   ├── cisco_ios.yml
+│   └── arista_eos.yml
+└── site.yml
+```
+
+## Inventory Format (`inventory.yml`)
+
+```yaml
+all:
+  children:
+    cisco_ios:
+      hosts:
+        sw-access-01:
+          ansible_host: 172.16.1.10
+    arista_eos:
+      hosts:
+        sw-leaf-01:
+          ansible_host: 172.16.2.10
+```
+
+- The group names `cisco_ios` and `arista_eos` don't automatically tell Ansible **which network OS** to use. They're just inventory group names
+
+- The group names cisco_ios and arista_eos don't automatically tell Ansible which network OS to use. They're just inventory group names
+
+    ```yaml
+    all:
+    children:
+        cisco_ios:
+            hosts:
+                sw-access-01:
+                    ansible_host: 172.16.1.10
+            vars:
+                    ansible_network_os: cisco.ios.ios
+        arista_eos:
+            hosts:
+                sw-leaf-01:
+                    ansible_host: 172.16.2.10
+            vars:
+                ansible_network_os: arista.eos.eos
+    ```
+
+## Group Variables (`group_vars/cisco_ios.yml`)
+
+```yaml
+ansible_connection: network_cli
+ansible_network_os: cisco.ios.ios
+ansible_user: netadmin
+ansible_become: true
+ansible_become_method: enable
+```
