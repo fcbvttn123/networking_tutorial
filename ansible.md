@@ -123,3 +123,16 @@ ansible_user: netadmin
 ansible_become: true
 ansible_become_method: enable
 ```
+
+## How Ansible Uses the Inventory in a Playbook
+
+```yaml
+- name: Configure Cisco IOS Switches
+  hosts: cisco_ios
+  gather_facts: false
+  tasks:
+    - name: Ensure domain name is configured
+      cisco.ios.ios_config:
+        lines:
+          - ip domain name lab.local
+```
