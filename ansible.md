@@ -1,3 +1,23 @@
+# Table of contents
+
+- [Table of contents](#table-of-contents)
+- [Lab Setup (EVE-NG)](#lab-setup-eve-ng)
+  - [Build the Topology](#build-the-topology)
+  - [Bootstrap SSH on Cisco vIOS Switches](#bootstrap-ssh-on-cisco-vios-switches)
+  - [Prepare the Ansible Control Node](#prepare-the-ansible-control-node)
+- [Inventory](#inventory)
+  - [File Structure](#file-structure)
+  - [Inventory Format (`inventory.yml`)](#inventory-format-inventoryyml)
+  - [Group Variables (`group_vars/cisco_ios.yml`)](#group-variables-group_varscisco_iosyml)
+  - [How Ansible Uses the Inventory in a Playbook](#how-ansible-uses-the-inventory-in-a-playbook)
+- [Playbooks](#playbooks)
+  - [A Complete Network Playbook Example](#a-complete-network-playbook-example)
+  - [Structure of a Task](#structure-of-a-task)
+  - [Key Components Explained](#key-components-explained)
+  - [Declarative vs. Imperative Modules](#declarative-vs-imperative-modules)
+  - [Running a Playbook](#running-a-playbook)
+
+
 # Lab Setup (EVE-NG)
 
 ## Build the Topology
@@ -136,3 +156,103 @@ ansible_become_method: enable
         lines:
           - ip domain name lab.local
 ```
+
+
+# Playbooks
+
+## A Complete Network Playbook Example
+
+```yaml
+---
+- name: Network Device Baseline Configuration
+  hosts: cisco_ios
+  gather_facts: false
+
+  vars:
+    target_vlan_id: 100
+    target_vlan_name: GUEST_WIFI
+
+  tasks:
+    - name: Gather running configuration from device
+      cisco.ios.ios_facts:
+        gather_subset:
+          - config
+
+    - name: Save configuration backup to local management machine
+      ansible.builtin.copy:
+        content: "{{ ansible_facts.net_config }}"
+        dest: "./backups/{{ inventory_hostname }}_{{ ansible_date_time.date }}.cfg"
+
+    - name: Ensure VLAN 100 exists
+      cisco.ios.ios_vlans:
+        config:
+          - vlan_id: "{{ target_vlan_id }}"
+            name: "{{ target_vlan_name }}"
+        state: merged
+```
+
+## Structure of a Task
+
+```bash
+- name: TASK NAME
+  MODULE:
+    PARAMETER: VALUE
+    PARAMETER: VALUE
+```
+
+## Key Components Explained
+
+- Play Header
+
+  - `name`: A readable description of what the play accomplishes
+
+  - `hosts`: The group or specific host from your inventory file to target (e.g., `cisco_ios`, `all`, or `edge_routers`)
+
+  - `gather_facts: false`: Standard Ansible attempts to gather Linux facts (like CPU architecture or disk usage) via Python
+
+    - Network OS devices do not run Python, so you almost always set this to `false` and use network-specific modules (like `cisco.ios.ios_facts`) instead
+
+- Variables (`vars` or `vars_files`)
+
+  - Allow you to avoid hardcoding values inside tasks
+  
+  - You can define them directly in the playbook, in external variable files, or derive them from `Jinja2` templates
+
+- Tasks (modules)
+
+  - `cisco.ios.ios_facts`: Pulls operational data (hostname, software version, running config)
+
+  - `ansible.builtin.copy`: Runs locally on your control node to save the config output into a local backup file
+
+  - `cisco.ios.ios_vlans`: Configures VLANs using declarative data structures
+
+## Declarative vs. Imperative Modules
+
+- When writing tasks for network automation, you will see two styles of modules
+
+- **Imperative** (Command-based): you give exact CLI commands to execute
+
+  ```yaml
+  - name: Run raw CLI commands
+    cisco.ios.ios_command:
+      commands:
+        - show ip interface brief
+        - show vlan brief
+  ```
+
+- **Declarative** (Resource-based — Recommended): you describe the desired end state, and Ansible determines what CLI commands need to be run to reach that state
+
+  ```yaml
+  - name: Configure interface description
+    cisco.ios.ios_l2_interfaces:
+      config:
+        - name: GigabitEthernet0/1
+          mode: trunk
+          trunk:
+            native_vlan: 1
+      state: merged
+  ```
+
+## Running a Playbook
+
+`ansible-playbook -i inventory.yml site.yml`
