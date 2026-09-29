@@ -91,25 +91,27 @@ all:
           ansible_host: 172.16.2.10
 ```
 
-- The group names `cisco_ios` and `arista_eos` don't automatically tell Ansible **which network OS** to use. They're just inventory group names
+- The group names `cisco_ios` and `arista_eos` don't automatically tell Ansible **which network OS** to use
 
-- The group names cisco_ios and arista_eos don't automatically tell Ansible which network OS to use. They're just inventory group names
+- They're just inventory groups unless you add variables that configure the connection/platform
+
+- For example, you will commonly see something like:
 
     ```yaml
     all:
-    children:
+      children:
         cisco_ios:
-            hosts:
-                sw-access-01:
-                    ansible_host: 172.16.1.10
-            vars:
-                    ansible_network_os: cisco.ios.ios
+          hosts:
+            sw-access-01:
+              ansible_host: 172.16.1.10
+          vars:
+            ansible_network_os: cisco.ios.ios
         arista_eos:
-            hosts:
-                sw-leaf-01:
-                    ansible_host: 172.16.2.10
-            vars:
-                ansible_network_os: arista.eos.eos
+          hosts:
+            sw-leaf-01:
+              ansible_host: 172.16.2.10
+          vars:
+            ansible_network_os: arista.eos.eos
     ```
 
 ## Group Variables (`group_vars/cisco_ios.yml`)
