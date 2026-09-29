@@ -16,6 +16,10 @@
   - [Key Components Explained](#key-components-explained)
   - [Declarative vs. Imperative Modules](#declarative-vs-imperative-modules)
   - [Running a Playbook](#running-a-playbook)
+- [Modules](#modules)
+  - [What is a module?](#what-is-a-module)
+  - [What's inside the module?](#whats-inside-the-module)
+  - [Where do these modules actually come from?](#where-do-these-modules-actually-come-from)
 
 
 # Lab Setup (EVE-NG)
@@ -256,3 +260,99 @@ ansible_become_method: enable
 ## Running a Playbook
 
 `ansible-playbook -i inventory.yml site.yml`
+
+
+# Modules
+
+## What is a module?
+
+- A module is essentially a piece of Ansible functionality that performs a specific operation
+
+- `ansible.builtin.copy:` is a module for copying files, `cisco.ios.ios_config:` is a module for managing Cisco IOS configuration
+
+  ```bash
+  ansible.builtin.copy
+  │       │       │
+  │       │       └── module
+  │       └────────── collection
+  └────────────────── namespace
+  ```
+
+- Other network examples include:
+
+  ```bash
+  cisco.ios.ios_command:
+  cisco.ios.ios_config:
+  arista.eos.eos_command:
+  arista.eos.eos_config:
+  ```
+
+## What's inside the module?
+
+```bash
+- name: Configure VLAN
+  cisco.ios.ios_config:
+    lines:
+      - vlan 100
+      - name USERS
+```
+
+- Module: `cisco.ios.ios_config:`
+
+- Parameters: passed to the module
+
+    ```bash
+    lines:
+      - vlan 100
+      - name USERS
+    ```
+
+- More examples
+
+  ```bash
+  # ios commands
+  - name: Show interfaces
+    cisco.ios.ios_command:
+      commands:
+        - show ip interface brief
+        - show ip interface brief
+        - show running-config
+
+  # ios config
+  - name: Configure interface
+    cisco.ios.ios_config:
+      parents:
+        - interface GigabitEthernet1/0/1
+      lines:
+        - description USER-PC
+        - switchport mode access
+        - switchport access vlan 100
+
+  # copy
+  - name: Copy file
+    ansible.builtin.copy:
+      src: myfile.txt
+      dest: /tmp/myfile.txt
+  ```
+
+## Where do these modules actually come from?
+
+- Collections are packages containing Ansible content
+
+- For example: `cisco.ios` is a collection
+
+- It contains modules such as:
+
+  ```bash
+  cisco.ios
+  │
+  ├── ios_config
+  ├── ios_command
+  ├── ios_facts
+  ├── ios_interfaces
+  ├── ios_l2_interfaces
+  ├── ios_l3_interfaces
+  └── ...
+  ```
+
+- You install collections separately from Ansible itself `ansible-galaxy collection install cisco.ios`
