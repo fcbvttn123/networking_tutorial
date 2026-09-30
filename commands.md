@@ -1,4 +1,20 @@
 ```bash
+# console line
+Router> enable
+Router# configure terminal
+Router(config)# line console 0
+Router(config-line)# password mypassword
+Router(config-line)# login
+Router(config-line)# exec-timeout 15 0
+Router(config-line)# end
+# vty line
+Router# configure terminal
+Router(config)# line vty 0 4
+Router(config-line)# transport input ssh
+Router(config-line)# password remotepass
+Router(config-line)# login
+Router(config-line)# end
+
 
 # static routing
 Router(config)# show ip route
