@@ -17,7 +17,7 @@
 - [STP Timers](#stp-timers)
   - [Hello Time](#hello-time)
   - [Max Age (Classic STP)](#max-age-classic-stp)
-- [Max Age (RSTP)](#max-age-rstp)
+  - [Max Age (RSTP)](#max-age-rstp)
   - [Forward Delay](#forward-delay)
 - [Root Bridge Election](#root-bridge-election)
 - [Classic STP Cost](#classic-stp-cost)
@@ -233,7 +233,7 @@
 
 - If a SW does not hear from the root for 20 seconds, it recalculates the topology
 
-# Max Age (RSTP)
+## Max Age (RSTP)
 
 - Switches send BPDUs every 2 seconds
 
