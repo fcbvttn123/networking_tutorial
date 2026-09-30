@@ -1,4 +1,38 @@
 ```bash
+# interface status
+SW# show interfaces status
+Port      Name               Status       Vlan       Duplex  Speed Type
+Gi1/0/1   Uplink-Core        connected    trunk        a-full  a-1000 10/100/1000BaseTX
+# interface IP
+SW# show ip interface brief
+Interface              IP-Address      OK? Method Status                Protocol
+GigabitEthernet1/0/1   192.168.10.1      YES unset  up                    up
+# vlan
+SW# show vlan brief
+VLAN Name                             Status    Ports
+---- -------------------------------- --------- -------------------------------
+1    default                          active    Gi1/0/3, Gi1/0/5, Gi1/0/7, Gi1/0/8
+                                                Gi1/0/9, Gi1/0/10
+10   Engineering                      active    Gi1/0/2
+# trunk
+SW# show interfaces trunk
+Port        Mode         Encapsulation  Status        Native vlan
+Gi1/0/1     on           802.1q         trunking      1
+Te1/1/1     desirable    802.1q         trunking      99
+
+Port        Vlans allowed on trunk
+Gi1/0/1     1-4094
+Te1/1/1     10,20,30,99
+
+Port        Vlans allowed and active in management domain
+Gi1/0/1     1,10,20,30,99
+Te1/1/1     10,20,30,99
+
+Port        Vlans in spanning tree forwarding state and not pruned
+Gi1/0/1     1,10,20,30,99
+Te1/1/1     10,20,30,99
+
+
 # console line
 Router> enable
 Router# configure terminal
