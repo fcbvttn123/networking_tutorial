@@ -82,6 +82,7 @@ Set SW2's IP address to `192.168.1.12`
 
     # Install Ansible core and Cisco collection
     pip3 install ansible
+    sudo apt install ansible
     ansible-galaxy collection install cisco.ios
     ```
 
