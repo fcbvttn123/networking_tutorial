@@ -80,8 +80,44 @@ SW(config)# interface <interface_name>
 SW(config-if)# switchport mode access
 SW(config-if)# spanning-tree portfast
 # stp: verification commands
-show spanning-tree
-show spanning-tree summary
+SW# show spanning-tree
+VLAN0010
+  Spanning tree enabled protocol ieee
+  Root ID    Priority    24586
+             Address     0024.148d.a180
+             This bridge is the root
+             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
+
+  Bridge ID  Priority    24586  (priority 24576 sys-id-ext 10)
+             Address     0024.148d.a180
+             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
+             Aging Time  300 sec
+
+Interface           Role Sts Cost      Prio.Nbr Type
+------------------- ---- --- --------- -------- --------------------------------
+Gi1/0/1             Desg FWD 19        128.1    P2p 
+Gi1/0/2             Desg FWD 19        128.2    P2p
+SW# show spanning-tree summary
+Switch is in pvst mode
+Root bridge for: VLAN0010, VLAN0020
+Extended system ID           is enabled
+Portfast Default             is disabled
+PortFast BPDU Guard Default  is disabled
+Portfast BPDU Filter Default is disabled
+Loopguard Default            is disabled
+EtherChannel misconfig guard is enabled
+UplinkFast                   is disabled
+BackboneFast                 is disabled
+Configured Pathcost method   is short
+
+Name                   Blocking Listening Learning Forwarding STP Active
+---------------------- -------- --------- -------- ---------- ----------
+VLAN0001                      1         0        0          3          4
+VLAN0010                      0         0        0          4          4
+VLAN0020                      0         0        0          4          4
+VLAN0030                      1         0        0          2          3
+---------------------- -------- --------- -------- ---------- ----------
+4 vlans                       2         0        0         13         15
 show spanning-tree <VLAN_ID>
 show spanning-tree active
 show spanning-tree detail
