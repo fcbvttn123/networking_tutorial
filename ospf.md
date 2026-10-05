@@ -36,8 +36,8 @@
   - [Down State (hello packet: R1 -\> R2)](#down-state-hello-packet-r1---r2)
   - [Init State](#init-state)
   - [2-way State (hello packet: R1 \<-\> R2)](#2-way-state-hello-packet-r1---r2)
-  - [Exstart State (DBD packet)](#exstart-state-dbd-packet)
-  - [Exchange State (DBD packet)](#exchange-state-dbd-packet)
+  - [Exstart State (DBD packet: master/slave)](#exstart-state-dbd-packet-masterslave)
+  - [Exchange State (DBD packet: LSA summary)](#exchange-state-dbd-packet-lsa-summary)
   - [Loading State (LSR, LSU, LSAack)](#loading-state-lsr-lsu-lsaack)
   - [Full State](#full-state)
   - [How OSPF Handles New Routes](#how-ospf-handles-new-routes)
@@ -609,7 +609,7 @@ External Route Tag: 0
 
     - They are now ready to share LSAs to build a common LSDB
 
-## Exstart State (DBD packet)
+## Exstart State (DBD packet: master/slave)
 
 - The two routers will now **prepare** (for the next state) to exchange information about their LSDB
 
@@ -627,7 +627,7 @@ External Route Tag: 0
 
     - R2 said it's the Master because of the higher Router ID
 
-## Exchange State (DBD packet)
+## Exchange State (DBD packet: LSA summary)
 
 - In the Exchange state, the routers exchange DBDs which contain a list of the LSAs in their LSDB
 
