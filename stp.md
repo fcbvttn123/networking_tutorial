@@ -409,6 +409,12 @@ VLAN0001 is executing the ieee compatible Spanning Tree protocol
 
 - Forwarding
 
+- In RSTP, a new port **does not use a fixed timer** to stay in the **discarding** and **learning** states
+
+  - Instead, it transitions almost instantly (usually within milliseconds to a few seconds) using a **handshaking mechanism** called the **proposal/agreement process**
+
+  - No Fixed Timers: Unlike classic STP (which waits 30 seconds for listening and learning), RSTP relies on an active handshake
+
 ## Port Roles
 
 - RP and DP are the same with Classic STP
