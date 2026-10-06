@@ -25,6 +25,8 @@
   - [`show spanning-tree` (Check STP status)](#show-spanning-tree-check-stp-status)
   - [`show spanning-tree interface <interface_id>` (See STP details for an interface)](#show-spanning-tree-interface-interface_id-see-stp-details-for-an-interface)
   - [`show spanning-tree detail` (Look for STP topology changes)](#show-spanning-tree-detail-look-for-stp-topology-changes)
+- [Root Port Election Process](#root-port-election-process)
+- [Designated Port Election Process](#designated-port-election-process)
 - [RSTP](#rstp)
   - [Differences](#differences)
   - [RSTP Cost](#rstp-cost)
@@ -321,6 +323,57 @@ VLAN0001 is executing the ieee compatible Spanning Tree protocol
   Number of topology changes 12 last change occurred 00:05:31 ago
           from GigabitEthernet0/24
   Times:  hold 1, topology change 35, notification 2
+```
+
+
+
+
+# Root Port Election Process
+
+- The Root Bridge generates a configuration BPDU containing **a Root Path Cost of 0** and **broadcasts it** out all its active ports
+
+- Each SW relies entirely on local information exchanged through BPDU to determine its Root Port
+
+- Every switch receives BPDUs from neighboring SWs on its operational ports. Each incoming BPDU contains critical parameters:
+
+  - Root Bridge ID
+
+  - Root Path Cost: the total cost from the sending neighbor to reach the Root Bridge
+
+  - Bridge ID (BID)
+
+  - Port ID (PID): the specific port number on the neighbor switch from which the BPDU was sent
+
+- When a SW receives a BPDU on an **ingress port**, it adds its own port speed cost (the Ingress Port Cost) to the Root Path Cost declared inside the incoming BPDU
+
+- Tie-Breaker Algorithm
+
+  ```bash
+  [ 1. Lowest Total Root Path Cost ]
+                  │ (Tie)
+                  ▼
+  [ 2. Lowest Neighbor Bridge ID (BID) ]
+                  │ (Tie)
+                  ▼
+  [ 3. Lowest Neighbor Port ID (PID) ]
+                  │ (Tie)
+                  ▼
+  [ 4. Lowest Local Port ID ]
+  ```
+
+
+
+
+# Designated Port Election Process
+
+```bash
+[ 1. Lowest Root Path Cost ]
+              │ (Tie)
+              ▼
+[ 2. Lowest Sender Bridge ID (BID) ]
+              │ (Tie)
+              ▼
+[ 3. Lowest Sender Port ID (PID) ]
 ```
 
 
