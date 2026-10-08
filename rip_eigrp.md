@@ -2,6 +2,8 @@
 
 - IGP - Distance Vector Protocol
 
+- Multicast IP `224.0.0.9`
+
 - Use **hop count** as metric (**bandwidth is irrelevant**). The maximum hop count is **15**
 
 - A RIP-enabled Router **forms adjacencies with its neighbors**
@@ -39,3 +41,22 @@
     - Passive Interface: `R1(config-router)# passive-interface g2/0`
 
     - Advertise a default route: `R1(config-router)# default-information originate`
+
+
+# EIGRP
+
+- Cisco proprietary, only partly published
+
+- IGP - **Distance Vector** Protocol
+
+- Multicast IP `224.0.0.10`
+
+- Enable RIPv2
+
+    ```bash
+    R1(config)# router eigrp 1
+    R1(config-router)# no auto-summary
+    R1(config-router)# network 10.0.0.0
+    R1(config-router)# network 172.16.1.0 0.0.0.15
+    R1(config-router)# passive-interface g2/0
+    ```
