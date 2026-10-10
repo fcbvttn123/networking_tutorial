@@ -5,6 +5,12 @@
   - [Build the Topology](#build-the-topology)
   - [Bootstrap SSH on Cisco vIOS Switches](#bootstrap-ssh-on-cisco-vios-switches)
   - [Prepare the Ansible Control Node](#prepare-the-ansible-control-node)
+- [Folders and Variables](#folders-and-variables)
+  - [Folder Structure](#folder-structure)
+  - [`group_vars`](#group_vars)
+  - [`host_vars`](#host_vars)
+  - [`inventory` File Example](#inventory-file-example)
+  - [Use the variables in a playbook](#use-the-variables-in-a-playbook)
 - [Inventory](#inventory)
   - [File Structure](#file-structure)
   - [Inventory Format (`inventory.yml`)](#inventory-format-inventoryyml)
@@ -85,6 +91,155 @@ Set SW2's IP address to `192.168.1.12`
     sudo apt install ansible
     ansible-galaxy collection install cisco.ios
     ```
+
+
+# Folders and Variables
+
+## Folder Structure
+
+  ```bash
+  ├── inventory.ini             <-- Host/Group level vars (quick/small setups)
+  ├── group_vars/
+  │   ├── all.yml               <-- Global defaults (NTP servers, DNS, Domain)
+  │   └── switches.yml          <-- Group-specific (VLAN lists, syslog servers)
+  ├── host_vars/
+  │   ├── switch01.yml          <-- Device-specific (IP addresses, hostnames, AS numbers)
+  │   └── router01.yml
+  └── playbooks/
+      └── site.yml              <-- Playbook/Task level vars (temporary/override)
+  ```
+
+## `group_vars`
+
+- `group_vars` is `a special directory name` that Ansible recognizes automatically **to load variables associated with inventory groups**
+
+- `group_vars/all.yml`: define global network parameters like NTP servers, DNS servers, AAA settings, or connection credentials
+
+  ```yaml
+  ---
+  # Connection settings for Ansible
+  ansible_connection: ansible.netcommon.network_cli
+  ansible_user: admin
+  ansible_password: "{{ vault_ansible_password }}" # Injected via Ansible Vault
+
+  # Global Network Infrastructure Parameters
+  dns_servers:
+    - 1.1.1.1
+    - 8.8.8.8
+
+  ntp_servers:
+    - 10.0.0.123
+    - 10.0.0.124
+
+  domain_name: example.lab
+  ```
+
+- `group_vars/<group_name>.yml`: must exactly match the group names defined in your inventory file
+
+- Example: `group_vars/switches.yml`
+
+  ```yaml
+  ---
+  ansible_connection: ansible.netcommon.network_cli
+  ansible_network_os: cisco.ios.ios
+  ansible_user: "{{ vault_ansible_user }}"
+  ansible_password: "{{ vault_ansible_password }}"
+  ```
+
+## `host_vars`
+
+- `host_vars/<hostname>.yml`: define individual device attributes like interface IP addresses, loopbacks, and BGP neighbor IPs
+
+- `host_vars/<hostname>.yml`: must exactly match the host names defined in your inventory file
+
+- The file **does not configure the router by itself**. A playbook must read these variables to apply the configuration
+
+- Example: `host_vars/R1-CORE.yml`
+
+  ```yaml
+  ---
+  # Device identity and metadata
+  hostname: R1-CORE
+  site: Toronto
+  device_role: core_router
+  environment: production
+
+  # Desired configuration data
+  loopback_interfaces:
+    - name: Loopback0
+      ipv4_address: 10.255.0.1
+      ipv4_mask: 255.255.255.255
+
+  interfaces:
+    - name: GigabitEthernet1
+      description: Uplink-to-R2-CORE
+      ipv4_address: 10.0.12.1
+      ipv4_mask: 255.255.255.252
+      enabled: true
+
+    - name: GigabitEthernet2
+      description: Uplink-to-DIST-SW1
+      ipv4_address: 10.0.21.1
+      ipv4_mask: 255.255.255.252
+      enabled: true
+
+  # Routing configuration
+  ospf:
+    process_id: 10
+    router_id: 10.255.0.1
+    networks:
+      - network: 10.0.12.0
+        wildcard: 0.0.0.3
+        area: 0
+      - network: 10.0.21.0
+        wildcard: 0.0.0.3
+        area: 0
+  ```
+
+## `inventory` File Example
+
+  ```yaml
+  ---
+  all:
+    children:
+      routers:
+        hosts:
+          R1-CORE:
+            ansible_host: 192.0.2.11
+          R2-CORE:
+            ansible_host: 192.0.2.12
+      switches:
+        hosts:
+          SW1-ACCESS:
+            ansible_host: 192.0.2.21
+          SW2-ACCESS:
+            ansible_host: 192.0.2.22
+  ```
+
+## Use the variables in a playbook
+
+- `playbooks/configure_interfaces.yml`
+
+  ```yaml
+  ---
+  - name: Configure router interfaces
+    hosts: routers
+    gather_facts: false
+
+    tasks:
+      - name: Configure each interface
+        cisco.ios.ios_config:
+          parents: "interface {{ item.name }}"
+          lines:
+            - "description {{ item.description }}"
+            - "ip address {{ item.ipv4_address }} {{ item.ipv4_mask }}"
+            - "no shutdown"
+        loop: "{{ interfaces }}"
+  ```
+
+- The target for the task is the line `hosts: routers`
+
+- Run the playbook against `R1-CORE` only: `ansible-playbook -i inventory.yml playbooks/configure_interfaces.yml --limit R1-CORE`
 
 
 # Inventory
