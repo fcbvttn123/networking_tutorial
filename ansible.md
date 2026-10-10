@@ -26,6 +26,15 @@
   - [What is a module?](#what-is-a-module)
   - [What's inside the module?](#whats-inside-the-module)
   - [Where do these modules actually come from?](#where-do-these-modules-actually-come-from)
+- [Facts and Roles](#facts-and-roles)
+  - [Facts](#facts)
+  - [Roles](#roles)
+- [Jinja2 Templates](#jinja2-templates)
+- [Ansible Galaxy](#ansible-galaxy)
+  - [What it is](#what-it-is)
+  - [What you can download from Galaxy](#what-you-can-download-from-galaxy)
+  - [Dependency Management (`requirements.yml`)](#dependency-management-requirementsyml)
+  - [Key Galaxy CLI Commands](#key-galaxy-cli-commands)
 
 
 # Lab Setup (EVE-NG)
@@ -512,3 +521,135 @@ ansible_become_method: enable
   ```
 
 - You install collections separately from Ansible itself `ansible-galaxy collection install cisco.ios`
+
+
+# Facts and Roles
+
+## Facts
+
+- Automatically gather device attributes, instead of hardcoding device details
+
+- Example
+
+  ```yaml
+  ---
+  - name: Inspect Device State
+    hosts: switches
+    gather_facts: true  # Tells Ansible to automatically pull facts first
+
+    tasks:
+      - name: Print the device operating system version
+        ansible.builtin.debug:
+          msg: "The OS version is {{ ansible_facts.network.os_version }}"
+  ```
+
+- Most network automation playbooks set `gather_facts: false` and instead use explicit, target-specific facts modules only when needed
+
+  - Performance Hit: Traditional network switches and routers have slow control planes
+
+  - Vendor Variance: Cisco IOS, Arista EOS, and Juniper Junos format their low-level system data completely differently, meaning standard global facts variables don't always map cleanly
+
+## Roles
+
+- In software development, you don't write a giant monolithic script for an entire application; you break code down into reusable classes, packages, or modules
+
+- nstead of dumping 500 lines of configuration into a single playbook, you wrap logic into reusable roles like common, interfaces, or bgp, and call them across different playbooks
+
+- The Anatomy of a Role (Folder Structure)
+
+  ```bash
+  roles/
+  └── ntp/
+      ├── README.md               # Documentation on what the role does and its required vars
+      ├── defaults/
+      │   └── main.yml            # Default variables (lowest precedence, easily overridden)
+      ├── vars/
+      │   └── main.yml            # Role-specific variables (higher precedence)
+      ├── tasks/
+      │   └── main.yml            # The core execution logic (list of Ansible tasks)
+      ├── templates/
+      │   └── ntp.conf.j2         # Jinja2 template files used by tasks
+      ├── files/
+      │   └── banner.txt          # Static files to copy over to the device
+      └── meta/
+          └── main.yml            # Metadata (author, supported platforms, dependencies)
+  ```
+
+    - `tasks/main.yml`: Where the actual work happens. Ansible automatically starts execution here
+
+    - `defaults/main.yml`: Sensible defaults. If a user doesn't define a variable, Ansible falls back to these
+
+    - `templates/`: Jinja2 templates (.j2) that get compiled and pushed to network hardware or servers
+
+    - `meta/main.yml`: Allows you to declare role dependencies (e.g., "Make sure the common role runs before the ntp role")
+
+
+# Jinja2 Templates
+
+- Jinja2 is the engine used to dynamically generate configuration text files
+
+- While some network modules use structured JSON/API calls, many traditional network configurations (like complex BGP policies, ACL blocks, or multi-interface templates) are applied as raw text blocks
+
+- Jinja2 lets you write a reusable text template (`.j2`) and inject your variables, loops, and conditional logic into it
+
+
+# Ansible Galaxy
+
+## What it is
+
+- As a software developer, you already rely on `npm` for `Node.js`, `pip` for `Python`, or `NuGet` for `C#`
+
+- Ansible Galaxy is the exact same thing: the official public registry and package manager for Ansible content
+
+## What you can download from Galaxy
+
+- Collections (`collections:`)
+
+  - Bundles of vendor-specific modules, connection plugins, and documentation
+
+  - For example, if you want to configure Cisco switches or Arista routers, you download the official vendor collections: `cisco.ios`, `arista.eos`, `juniper.junos`
+
+- Roles (`roles:`)
+
+  - Pre-packaged automation workflows written by the community or enterprise vendors
+
+  - For instance, instead of writing an NTP or Syslog role from scratch, you can search Galaxy for a community-vetted role, install it, and use it instantly
+
+## Dependency Management (`requirements.yml`)
+
+- In a real enterprise project, you don't install packages manually one by one
+
+- You define your dependencies in a manifest file called `requirements.yml`, exactly like a `package.json` or `requirements.txt`
+
+- Example
+
+  ```yaml
+  ---
+  # Vendor collections needed for network hardware
+  collections:
+    - name: cisco.ios
+      version: 5.2.0
+    - name: arista.eos
+      version: 6.1.0
+    - name: ansible.netcommon
+
+  # Community roles from Galaxy
+  roles:
+    - name: geerlingguy.ntp
+      version: 3.1.0
+  ```
+
+- Installing Dependencies: `ansible-galaxy install -r requirements.yml`
+
+## Key Galaxy CLI Commands
+
+```bash
+# install a collection
+ansible-galaxy collection install cisco.ios
+
+# install a community role
+ansible-galaxy role install geerlingguy.ntp
+
+# list locally installed collections
+ansible-galaxy collection list
+```
