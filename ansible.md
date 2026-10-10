@@ -35,6 +35,10 @@
   - [What you can download from Galaxy](#what-you-can-download-from-galaxy)
   - [Dependency Management (`requirements.yml`)](#dependency-management-requirementsyml)
   - [Key Galaxy CLI Commands](#key-galaxy-cli-commands)
+- [Vault](#vault)
+  - [What it is](#what-it-is-1)
+  - [What Ansible Vault Encrypts](#what-ansible-vault-encrypts)
+  - [Common Vault CLI Commands](#common-vault-cli-commands)
 
 
 # Lab Setup (EVE-NG)
@@ -652,4 +656,55 @@ ansible-galaxy role install geerlingguy.ntp
 
 # list locally installed collections
 ansible-galaxy collection list
+```
+
+
+# Vault
+
+## What it is
+
+- It's like the `.env` files to hide sensitive data
+
+- Ansible Vault is a feature that allows you to encrypt sensitive data files
+
+- Using strong symmetric encryption (AES-256) so they can safely be committed to Git
+
+## What Ansible Vault Encrypts
+
+- You don't encrypt entire playbooks
+
+- You encrypt specific variable files or inline strings
+
+- In a typical network automation repo, you create a dedicated secrets file
+
+  ```bash
+  group_vars/
+  ├── all.yml             # Public defaults (NTP, DNS)
+  └── vault.yml           # Encrypted secrets (Passwords, tokens)
+  ```
+
+- Inside an encrypted group_vars/vault.yml, your data looks like unreadable ciphertext:
+
+  ```bash
+  $ANSIBLE_VAULT;1.1;AES256
+  6365373332356134373132... [long string of cipher text]
+  ```
+
+## Common Vault CLI Commands
+
+```bash
+# create a new encrypted file
+ansible-vault create group_vars/vault.yml
+
+# encrypt an existing plain text file
+ansible-vault encrypt group_vars/vault.yml
+
+# view an encrypted file without editing
+ansible-vault view group_vars/vault.yml
+
+# edit an encrypted file
+ansible-vault edit group_vars/vault.yml
+
+# decrypt a file back to plain text
+ansible-vault decrypt group_vars/vault.yml
 ```
