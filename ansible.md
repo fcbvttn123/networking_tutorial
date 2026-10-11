@@ -254,6 +254,36 @@ Set SW2's IP address to `192.168.1.12`
 
 - The target for the task is the line `hosts: routers`
 
+  - This playbook runs for every device in the routers inventory group
+  
+  - For each router, Ansible loops through the list stored in interfaces and configures each interface one at a time
+
+- `interfaces` is a variable you define, while `item` is a variable Ansible creates automatically for each iteration of the loop
+
+  - Ansible does not automatically know which interfaces you want to configure
+
+  - You must define the variable somewhere, such as in: a `group_vars/` file, a `host_vars/` file, a variables file loaded with `vars_files`
+
+    ```yaml
+    # group_vars/routers.yml
+    ---
+    interfaces:
+      - name: GigabitEthernet0/0
+        description: Link to ISP
+        ipv4_address: 192.168.1.1
+        ipv4_mask: 255.255.255.0
+
+      - name: GigabitEthernet0/1
+        description: Link to LAN
+        ipv4_address: 10.10.10.1
+        ipv4_mask: 255.255.255.0
+
+      - name: Loopback0
+        description: Management Loopback
+        ipv4_address: 10.0.0.1
+        ipv4_mask: 255.255.255.255
+    ```
+
 - Run the playbook against `R1-CORE` only: `ansible-playbook -i inventory.yml playbooks/configure_interfaces.yml --limit R1-CORE`
 
 
