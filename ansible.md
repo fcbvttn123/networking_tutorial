@@ -26,9 +26,11 @@
   - [What is a module?](#what-is-a-module)
   - [What's inside the module?](#whats-inside-the-module)
   - [Where do these modules actually come from?](#where-do-these-modules-actually-come-from)
-- [Facts and Roles](#facts-and-roles)
-  - [Facts](#facts)
-  - [Roles](#roles)
+- [Facts](#facts)
+- [Roles](#roles)
+  - [Why we need `roles`](#why-we-need-roles)
+  - [What an `Ansible Role` looks like](#what-an-ansible-role-looks-like)
+  - [How to build a role](#how-to-build-a-role)
 - [Jinja2 Templates](#jinja2-templates)
 - [Ansible Galaxy](#ansible-galaxy)
   - [What it is](#what-it-is)
@@ -527,9 +529,7 @@ ansible_become_method: enable
 - You install collections separately from Ansible itself `ansible-galaxy collection install cisco.ios`
 
 
-# Facts and Roles
-
-## Facts
+# Facts
 
 - Automatically gather device attributes, instead of hardcoding device details
 
@@ -553,39 +553,129 @@ ansible_become_method: enable
 
   - Vendor Variance: Cisco IOS, Arista EOS, and Juniper Junos format their low-level system data completely differently, meaning standard global facts variables don't always map cleanly
 
-## Roles
 
-- In software development, you don't write a giant monolithic script for an entire application; you break code down into reusable classes, packages, or modules
+# Roles
 
-- nstead of dumping 500 lines of configuration into a single playbook, you wrap logic into reusable roles like common, interfaces, or bgp, and call them across different playbooks
+## Why we need `roles`
 
-- The Anatomy of a Role (Folder Structure)
+- Imagine you manage 50 Cisco routers. You need to configure all of them with:
+
+  - Hostnames
+
+  - NTP servers
+
+  - DNS servers
+
+  - Login banners
+
+  - VLANs or interface settings
+
+- You could write all these tasks in one enormous Ansible playbook. But as your network grows, that playbook becomes difficult to maintain
+
+- Roles solve this problem by organizing your automation into reusable, structured components
+
+## What an `Ansible Role` looks like
+
+```bash
+network-automation/
+├── inventory/
+│   └── hosts.yml
+├── playbooks/
+│   └── configure_network.yml
+└── roles/
+    └── ntp_config/
+        ├── tasks/
+        │   └── main.yml
+        ├── defaults/
+        │   └── main.yml
+        ├── vars/
+        │   └── main.yml
+        ├── handlers/
+        │   └── main.yml
+        ├── templates/
+        ├── files/
+        └── meta/
+            └── main.yml
+```
+
+- You don't need to create every folder when starting. For a basic role, `tasks/main.yml` is the most important file, and `defaults/main.yml` is useful for configurable values
+
+- `tasks/`: Contains the steps to configure devices
+
+- `defaults/`: Contains default values, such as NTP server addresses
+
+- `vars/`: Contains role variables with higher precedence than defaults
+
+- `handlers/`: Contains actions triggered by notifications, such as saving a configuration when appropriate
+
+- `templates/`: Stores Jinja2 templates for generating configuration files or text
+
+- `files/`: Stores static files that the role may copy to managed devices
+
+- `meta/`: Stores role metadata and dependencies
+
+## How to build a role
+
+- **Step 1: Create the role**
+
+  From your Ansible project directory, run:
+
+  This scaffolds a role directory and its standard files. You can also create the directories yourself
 
   ```bash
-  roles/
-  └── ntp/
-      ├── README.md               # Documentation on what the role does and its required vars
-      ├── defaults/
-      │   └── main.yml            # Default variables (lowest precedence, easily overridden)
-      ├── vars/
-      │   └── main.yml            # Role-specific variables (higher precedence)
-      ├── tasks/
-      │   └── main.yml            # The core execution logic (list of Ansible tasks)
-      ├── templates/
-      │   └── ntp.conf.j2         # Jinja2 template files used by tasks
-      ├── files/
-      │   └── banner.txt          # Static files to copy over to the device
-      └── meta/
-          └── main.yml            # Metadata (author, supported platforms, dependencies)
+  ansible-galaxy role init roles/ntp_config
   ```
 
-    - `tasks/main.yml`: Where the actual work happens. Ansible automatically starts execution here
+- **Step 2: Define the variables**
 
-    - `defaults/main.yml`: Sensible defaults. If a user doesn't define a variable, Ansible falls back to these
+  Open `roles/ntp_config/defaults/main.yml`
 
-    - `templates/`: Jinja2 templates (.j2) that get compiled and pushed to network hardware or servers
+  ```yaml
+  ---
+  ntp_servers:
+    - 192.0.2.10
+    - 192.0.2.11
+  ```
 
-    - `meta/main.yml`: Allows you to declare role dependencies (e.g., "Make sure the common role runs before the ntp role")
+- **Step 3: Write the tasks**
+
+  Open `roles/ntp_config/tasks/main.yml`
+
+  ```yml
+  ---
+  - name: Configure NTP servers
+    cisco.ios.ios_config:
+      lines:
+        - "ntp server {{ item }}"
+    loop: "{{ ntp_servers }}"
+  ```
+
+- **Step 4: Call the role from a playbook**
+
+  Create `playbooks/configure_network.yml`
+
+  ```yml
+  ---
+  - name: Configure routers
+    hosts: routers
+    gather_facts: false
+    roles:
+      - ntp_config
+
+  - name: Configure switches
+    hosts: switches
+    gather_facts: false
+    roles:
+      - ntp_config
+  ```
+
+- **Step 5: Run the playbook**
+
+  Assuming your inventory is configured with a group named routers, run:
+
+  ```bash
+  ansible-playbook -i inventory/hosts.yml playbooks/configure_network.yml
+  ```
 
 
 # Jinja2 Templates
