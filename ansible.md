@@ -32,6 +32,8 @@
   - [What an `Ansible Role` looks like](#what-an-ansible-role-looks-like)
   - [How to build a role](#how-to-build-a-role)
 - [Jinja2 Templates](#jinja2-templates)
+  - [Why we need it](#why-we-need-it)
+  - [Example](#example)
 - [Ansible Galaxy](#ansible-galaxy)
   - [What it is](#what-it-is)
   - [What you can download from Galaxy](#what-you-can-download-from-galaxy)
@@ -710,11 +712,137 @@ network-automation/
 
 # Jinja2 Templates
 
-- Jinja2 is the engine used to dynamically generate configuration text files
+## Why we need it
 
-- While some network modules use structured JSON/API calls, many traditional network configurations (like complex BGP policies, ACL blocks, or multi-interface templates) are applied as raw text blocks
+- YAML Hell (Indentation and Syntax Nightmares)
 
-- Jinja2 lets you write a reusable text template (`.j2`) and inject your variables, loops, and conditional logic into it
+  - Playbooks are written in YAML, which cares deeply about spaces and indentation
+
+  - If you try to write a 50-line router configuration inline using a YAML multiline string, you end up fighting escaping characters, quote matching, and indentation errors
+
+  - Separate `.j2` files are plain text files
+
+  - You can write raw configuration text exactly as it would appear in a terminal without worrying about breaking YAML syntax
+
+- Separation of Concerns
+
+  - The Playbook should handle orchestration
+
+  - The Template (`.j2`) should handle text formatting
+
+## Example
+
+- The Source of Truth (Data Model): `group_vars/core_switches.yml`
+
+  ```yaml
+  # group_vars/core_switches.yml
+  hostname: core-sw1-dc1
+  domain_name: corp.net
+
+  # VLAN Definitions
+  vlans:
+    - id: 10
+      name: USERS
+    - id: 20
+      name: VOICE
+    - id: 30
+      name: SERVERS
+
+  # Interface Definitions
+  interfaces:
+    - name: GigabitEthernet1/0/1
+      description: "Access Port - User Desk"
+      mode: access
+      vlan: 10
+    - name: GigabitEthernet1/0/24
+      description: "Trunk to Distribution Switch"
+      mode: trunk
+      allowed_vlans: "10,20,30"
+  ```
+
+- The Real-World `.j2` Template: `templates/cisco_ios_base.j2`
+
+  ```Django
+  ! ==========================================
+  ! Generated automatically by Ansible
+  ! Device: {{ hostname }}
+  ! ==========================================
+  hostname {{ hostname }}
+  ip domain-name {{ domain_name }}
+
+  ! --- VLAN CONFIGURATION ---
+  {% for vlan in vlans %}
+  vlan {{ vlan.id }}
+  name {{ vlan.name }}
+  !
+  {% endfor %}
+
+  ! --- INTERFACE CONFIGURATION ---
+  {% for intf in interfaces %}
+  interface {{ intf.name }}
+  description {{ intf.description }}
+  {% if intf.mode == 'access' %}
+  switchport mode access
+  switchport access vlan {{ intf.vlan }}
+  {% elif intf.mode == 'trunk' %}
+  switchport mode trunk
+  switchport trunk allowed vlan {{ intf.allowed_vlans }}
+  {% endif %}
+  no shutdown
+  !
+  {% endfor %}
+  ```
+
+- The Ansible Playbook
+
+  ```yaml
+  ---
+  - name: Deploy generated configurations to core switches
+    hosts: core_switches
+    gather_facts: false
+
+    tasks:
+      - name: Generate and push configuration using Jinja2 template
+        ansible.builtin.template:
+          src: templates/cisco_ios_base.j2
+          dest: /tmp/rendered_configs/{{ inventory_hostname }}_config.txt
+  ```
+
+- The Resulting Rendered Output
+
+  ```text
+  ! ==========================================
+  ! Generated automatically by Ansible
+  ! Device: core-sw1-dc1
+  ! ==========================================
+  hostname core-sw1-dc1
+  ip domain-name corp.net
+
+  ! --- VLAN CONFIGURATION ---
+  vlan 10
+  name USERS
+  !
+  vlan 20
+  name VOICE
+  !
+  vlan 30
+  name SERVERS
+  !
+
+  ! --- INTERFACE CONFIGURATION ---
+  interface GigabitEthernet1/0/1
+  description "Access Port - User Desk"
+  switchport mode access
+  switchport access vlan 10
+  no shutdown
+  !
+  interface GigabitEthernet1/0/24
+  description "Trunk to Distribution Switch"
+  switchport mode trunk
+  switchport trunk allowed vlan 10,20,30
+  no shutdown
+  !
+  ```
 
 
 # Ansible Galaxy
