@@ -1,4 +1,26 @@
 ```bash
+# initial config
+hostname <device-name>
+ip domain-name <domain>
+no ip domain-lookup
+service password-encryption
+enable secret <password>
+username admin privilege 15 secret <password>
+# ssh
+ip access-list standard IT_SSH_ONLY
+ permit 192.168.10.0 0.0.0.255
+line vty 0 15
+ logging synchronous # keep logs but stop interruptions
+ login local
+ transport input ssh
+ access-class IT_SSH_ONLY in
+ exit
+show ip ssh
+# console
+line console 0
+ logging synchronous
+
+
 # interface status
 SW# show interfaces status
 Port      Name               Status       Vlan       Duplex  Speed Type
