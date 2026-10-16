@@ -1,8 +1,6 @@
-- Next: Port Security, DHCP Snooping, Dynamic ARP Inspection, SSH, FTP/TFTP
-
 - CCNA Videos
 
-    - Protocols: RIP & EIGRP, CDP/LLDP, DTP/VTP, NTP, Syslog, ACL
+    - Protocols: CDP/LLDP, DTP/VTP, NTP, Syslog, ACL
 
     - Other CCNA Videos: Floating Static Routes, IPv6 (day 3), WLAN
 
@@ -11,3 +9,9 @@
 - TCP
 
 - EVE-NG Project
+
+- OSPF
+
+    - Video 3
+
+    - Multi-broadcast network (DR, BR, DOther)
