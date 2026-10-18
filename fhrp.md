@@ -20,6 +20,16 @@
         
         - If backups stop receiving this packet, a new master is elected
 
+- The packet journey
+
+    - Generation: The Master router's L3 routing engine generates a VRRP advertisement packet on its SVI (e.g., VLAN 10)
+
+    - Encapsulation: The packet is wrapped in **an Ethernet frame** with a destination multicast MAC address corresponding to `224.0.0.18`
+
+    - Transmission: The switch's ASIC/switching fabric pushes this frame only out of the physical L2 ports assigned to VLAN 10
+
+    - Reception: The backup multilayer switch receives the frame on its corresponding L2 port for VLAN 10, passes it up to its SVI for VLAN 10, and processes the VRRP advertisement
+
 
 
 # How FHRP Works
