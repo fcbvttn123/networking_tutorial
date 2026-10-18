@@ -43,8 +43,10 @@
   - [Key Galaxy CLI Commands](#key-galaxy-cli-commands)
 - [Vault](#vault)
   - [What it is](#what-it-is-1)
-  - [What Ansible Vault Encrypts](#what-ansible-vault-encrypts)
-  - [Common Vault CLI Commands](#common-vault-cli-commands)
+  - [Encrypt an Entire Variable File](#encrypt-an-entire-variable-file)
+  - [How to edit an encrypted file later](#how-to-edit-an-encrypted-file-later)
+  - [Encrypt a Single String](#encrypt-a-single-string)
+  - [Run Your Playbook with the Vault Password](#run-your-playbook-with-the-vault-password)
 
 
 # Lab Setup (EVE-NG)
@@ -1022,42 +1024,54 @@ ansible-galaxy collection list
 
 - Using strong symmetric encryption (AES-256) so they can safely be committed to Git
 
-## What Ansible Vault Encrypts
+## Encrypt an Entire Variable File
 
-- You don't encrypt entire playbooks
+- Create a file for your secrets, for example: `group_vars/ios_switches/vault.yml`
 
-- You encrypt specific variable files or inline strings
+- Inside that file, put your sensitive variables:
 
-- In a typical network automation repo, you create a dedicated secrets file
-
-  ```bash
-  group_vars/
-  ├── all.yml             # Public defaults (NTP, DNS)
-  └── vault.yml           # Encrypted secrets (Passwords, tokens)
+  ```yaml
+  ---
+  ansible_ssh_pass: "YourSecurePassword123"
+  enable_secret: "SuperSecretEnablePassword"
   ```
 
-- Inside an encrypted group_vars/vault.yml, your data looks like unreadable ciphertext:
+- Run the `ansible-vault encrypt` command in your terminal: `ansible-vault encrypt group_vars/ios_switches/vault.yml`
+
+- Ansible will prompt you to enter and confirm a password
+
+- Once complete, if you open that file, it will look like gibberish ciphertext starting with `$ANSIBLE_VAULT;1.1;AES256`
+
+## How to edit an encrypted file later
+
+- If you need to change a password later, do not try to open it in a normal text editor. Use the view or edit commands
+
+- To view it temporarily: `ansible-vault view group_vars/ios_switches/vault.yml`
+
+- To edit it (opens in your default terminal editor like nano or vim): `ansible-vault edit group_vars/ios_switches/vault.yml`
+
+## Encrypt a Single String
+
+- `ansible-vault encrypt_string --vault-id default "YourSecurePassword123" --name ansible_ssh_pass`
+
+- Ansible will output a block that you can paste directly into your regular group_vars file:
 
   ```bash
-  $ANSIBLE_VAULT;1.1;AES256
-  6365373332356134373132... [long string of cipher text]
+  ansible_ssh_pass: !vault |
+            $ANSIBLE_VAULT;1.1;AES256
+            636531363632343131643131... (long encrypted string)
   ```
 
-## Common Vault CLI Commands
+## Run Your Playbook with the Vault Password
 
-```bash
-# create a new encrypted file
-ansible-vault create group_vars/vault.yml
+- Option A: Prompt Interactively (Best for manual runs)
 
-# encrypt an existing plain text file
-ansible-vault encrypt group_vars/vault.yml
+  - Add `--ask-vault-pass` when running your playbook: `ansible-playbook -i inventory.ini site.yml --ask-vault-pass`
 
-# view an encrypted file without editing
-ansible-vault view group_vars/vault.yml
+  - Ansible will prompt you for the password you set in Step 2, decrypt the variables in memory, and run your playbook
 
-# edit an encrypted file
-ansible-vault edit group_vars/vault.yml
+- Option B: Use a Password File (Best for automation/CI-CD)
 
-# decrypt a file back to plain text
-ansible-vault decrypt group_vars/vault.yml
-```
+  - Save your vault password in a local text file `(e.g., .vault_pass.txt)`
+
+  - Point Ansible to that file using `--vault-password-file`: `ansible-playbook -i inventory.ini site.yml --vault-password-file .vault_pass.txt`
