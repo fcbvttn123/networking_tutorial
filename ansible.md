@@ -604,6 +604,47 @@ ansible_become_method: enable
 
 - You could write all these tasks in one enormous Ansible playbook. But as your network grows, that playbook becomes difficult to maintain
 
+  ```yaml
+  ---
+  - name: Configure Network Devices (Monolithic Approach)
+    hosts: cisco_switches
+    gather_facts: false
+
+    # Problem 1: Data and logic are tangled together in one file
+    vars:
+      network_vlans:
+        - id: 10
+          name: "CORP_DATA"
+        - id: 20
+          name: "VOICE_NETWORK"
+        - id: 30
+          name: "GUEST_WIFI"
+
+      ntp_servers:
+        - 10.100.1.10
+        - 10.100.1.20
+      
+      # Imagine adding SNMP settings, Syslog servers, BGP routing, 
+      # and Access Control Lists right here. The list keeps growing...
+
+    tasks:
+      - name: Ensure required VLANs are created
+        cisco.ios.ios_vlans:
+          config:
+            - vlan_id: "{{ item.id }}"
+              name: "{{ item.name }}"
+              state: active
+        loop: "{{ network_vlans }}"
+
+      - name: Configure global NTP servers
+        cisco.ios.ios_ntp:
+          config:
+            servers: "{{ ntp_servers }}"
+          state: present
+
+      # Imagine adding 300 more lines of configuration tasks below this line...
+  ```
+
 - Roles solve this problem by organizing your automation into reusable, structured components
 
 ## What an `Ansible Role` looks like
