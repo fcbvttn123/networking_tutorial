@@ -33,7 +33,9 @@
   - [How to build a role](#how-to-build-a-role)
 - [Jinja2 Templates](#jinja2-templates)
   - [Why we need it](#why-we-need-it)
+  - [Where to use it](#where-to-use-it)
   - [Example](#example)
+  - [2 ways referencing Jinja2 in a playbook](#2-ways-referencing-jinja2-in-a-playbook)
 - [Ansible Galaxy](#ansible-galaxy)
   - [What it is](#what-it-is)
   - [What you can download from Galaxy](#what-you-can-download-from-galaxy)
@@ -771,6 +773,50 @@ network-automation/
 
   - The Template (`.j2`) should handle text formatting
 
+## Where to use it
+
+- `.j2` (Jinja2) template files are extremely common inside the `templates/` folder of an Ansible Role
+
+  ```bash
+  roles/
+  └── <role-name>/
+      ├── defaults/
+      │   └── main.yml
+      ├── tasks/
+      │   └── main.yml
+      └── templates/
+          └── global_config.j2
+          └── vlans.j2
+  ```
+
+- In a `templates/` Directory at the Playbook Root
+
+  ```bash
+  my_project/
+  ├── playbook.yml
+  └── templates/
+      └── interface_config.j2    <-- Used directly by the playbook
+  ```
+
+  ```yaml
+  # playbook.yml
+  - name: Generate config from template
+    ansible.builtin.template:
+      src: interface_config.j2
+      dest: /etc/network/interfaces
+  ```
+
+- Anywhere on the Filesystem (Using Absolute or Relative Paths)
+
+  - Ansible's `template` module doesn't strictly require templates to be inside a folder named `templates`
+
+    ```yaml
+    - name: Use a template from a custom directory
+      ansible.builtin.template:
+        src: /home/engineer/custom_templates/banner.j2
+        dest: /etc/motd
+    ```
+
 ## Example
 
 - The Source of Truth (Data Model): `group_vars/core_switches.yml`
@@ -884,6 +930,24 @@ network-automation/
   no shutdown
   !
   ```
+
+## 2 ways referencing Jinja2 in a playbook
+
+```yaml
+# Method 1: using "content"
+- name: Create a file on the host using rendered inline template content
+  ansible.builtin.copy:
+    content: "{{ lookup('ansible.builtin.template', 'config.conf.j2') }}"
+    dest: /etc/myapp/config.conf
+    mode: '0644'
+
+# Method 2: using `src`
+- name: Deploy configuration file from template
+  ansible.builtin.template:
+    src: my_config.conf.j2
+    dest: /etc/my_config.conf
+    mode: '0644'
+```
 
 
 # Ansible Galaxy
