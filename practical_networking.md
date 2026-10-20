@@ -13,8 +13,9 @@
   - [HA with Direction Connection](#ha-with-direction-connection)
   - [Connect to Distribution Layer](#connect-to-distribution-layer)
   - [Transit VLAN and IP](#transit-vlan-and-ip)
+  - [Using 1 ISP](#using-1-isp)
+  - [Multi-WAN FireCluster (Dual ISPs)](#multi-wan-firecluster-dual-isps)
   - [FireCluster Active/Passive Setup](#firecluster-activepassive-setup)
-  - [Connect to ISP](#connect-to-isp)
 - [Switch Licensing](#switch-licensing)
   - [Licensing Type](#licensing-type)
   - [What Happens When the License Expires?](#what-happens-when-the-license-expires)
@@ -118,6 +119,8 @@
 
 # Firewall Design
 
+![Firecluster Design](./images/diagram_firecluster_la.jpg)
+
 ## HA with Direction Connection
 
 - With ~200 users, the goal is **high availability**, not firewall load balancing
@@ -150,7 +153,9 @@
     eth3 -> Dist2
     ```
 
-- Firebox LACP: `eth2 + eth3` on each firewall become an LACP interface
+- Firebox LACP: `eth2 + eth3` on each firewall become a **separate** LACP interface
+
+- The Distribution Layer (2 MLS) has **2 separate LACP interfaces**, each connected to one firebox
 
 ## Transit VLAN and IP
 
@@ -159,6 +164,52 @@
 - The Distribution Layer has SVI 999 `172.16.255.2 /29` - SVI, not routed port 
 
 - All ports of the distribution layer and the firebox are access port `VLAN 999`
+
+## Using 1 ISP
+
+![Firecluster One ISP](./images/diagram_firecluster_one_isp.png)
+
+- Suppose your ISP gives you: `203.0.113.0/29`
+
+- Usable
+
+    ```bash
+    203.0.113.1
+    203.0.113.2
+    203.0.113.3
+    203.0.113.4
+    203.0.113.5
+    203.0.113.6
+    ```
+
+- You assign
+
+    ```bash
+    Cluster VIP      203.0.113.2
+    Firebox A        203.0.113.3
+    Firebox B        203.0.113.4
+    Gateway          203.0.113.1
+    ```
+
+- The WatchGuard external (WAN) interfaces are **Layer 3 routed interfaces**, NOT Layer 2 switchports with SVIs like you'd configure on your Cisco distribution switches
+
+## Multi-WAN FireCluster (Dual ISPs)
+
+![Firecluster Dual ISP](./images/diagram_firecluster_multiwan.jpg)
+
+- ISP 1 primary, ISP 2 backup
+
+    - Configure the ISP 1 external interface with its assigned IP address and gateway
+
+    - Configure the ISP 2 external interface with its assigned IP address and gateway
+
+    - Open Network → Multi-WAN and select the Failover method
+
+    - Set ISP 1 as primary and ISP 2 as secondary
+
+    - Configure link monitors so the Firebox can detect loss of Internet reachability, not just a physical cable failure
+
+- Use both ISPs simultaneously
 
 ## FireCluster Active/Passive Setup
 
@@ -186,10 +237,6 @@
     - Then `FireCluster` → `Setup`
 
     - Select `Active/Passive`
-
-## Connect to ISP
-
-- **Each firebox has 1 port** connected to the **Access Switch** of the ISP
 
 
 # Switch Licensing
