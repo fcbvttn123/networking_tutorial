@@ -66,3 +66,12 @@
 - Practice: there are 9 collision domains in this topology
 
     ![Collision Domain Practice](./images/collision_domains.png)
+
+
+# Broadcast Domain
+
+- A broadcast domain is a logical division of a network in which **all nodes can reach each other by L2 broadcast**
+
+- **All devices connected to a SW** are in the same broadcast domain
+
+- Each router interface is a unique broadcast domain: routers don't forward L2 broadcast messages
