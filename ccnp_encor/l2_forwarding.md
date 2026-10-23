@@ -75,3 +75,22 @@
 - **All devices connected to a SW** are in the same broadcast domain
 
 - Each router interface is a unique broadcast domain: routers don't forward L2 broadcast messages
+
+
+# L2 Forwarding
+
+- Although routers operate at L3, they are still L2 aware, because they must inspect the dest MAC of the packets they receive
+
+    - and use L2 to address frames to the next hop
+
+    - or check if the frame is for the router itself
+
+- 4 message types from the L2 Forwarding:
+
+    - Unicast (known): action - forward
+
+    - Unicast (unknown): action - flood
+
+    - Broadcast: action - flood
+
+    - Multicast: action - flood
