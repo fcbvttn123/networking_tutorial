@@ -49,6 +49,8 @@
 
     - **Every ports of a Hub are in the same collision domain**
 
+    - Layer 1 Device: A hub operates purely at the **physical layer (Layer 1)** of the OSI model as a multi-port signal repeater
+
 - How a SW can replace a Hub
 
     - SWs are more intelligent than hubs, they are **Layer 2 aware** - knows where to send frames using MAC Table
