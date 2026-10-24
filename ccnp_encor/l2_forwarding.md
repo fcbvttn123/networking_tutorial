@@ -1,3 +1,14 @@
+# Table of contents
+
+- [Table of contents](#table-of-contents)
+- [OSI \& TCP/IP](#osi--tcpip)
+  - [OSI](#osi)
+  - [TCP/IP](#tcpip)
+- [Collision Domains](#collision-domains)
+- [Broadcast Domain](#broadcast-domain)
+- [L2 Forwarding](#l2-forwarding)
+
+
 # OSI & TCP/IP
 
 ## OSI
