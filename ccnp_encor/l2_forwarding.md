@@ -96,3 +96,20 @@
     - Broadcast: action - flood
 
     - Multicast: action - flood
+
+- Default MAC addresses
+
+    ```bash
+    SW# show mac address-table
+            Mac Address Table
+    ------------------------------------------------------------------
+
+    Vlan    Mac Address       Type        Ports
+    ----    -----------       ----        -----
+    1       0180.c200.0000    STATIC      CPU       # STP
+    1       0180.c200.000e    STATIC      CPU       # LLDP
+    ```
+
+        - The are default static addresses for multicast addresses
+
+        - The column `port cpu` means the packets are sent to CPU for processing
