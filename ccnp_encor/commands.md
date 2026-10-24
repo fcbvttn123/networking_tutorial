@@ -10,3 +10,12 @@ SW(config)# mac address-table static <mac-address> vlan <vlan_id> {interface <in
 # IPv4 verification commands
 SW# show ip interfaces brief
 SW# show ip interface g0/0
+
+# check which route the router selects for a destination
+R1# show ip route 203.0.113.96
+Routing entry for 203.0.113.0/24
+  Known via "ospf 1", distance 110, metric 20, type intra-area
+  Last updated from 192.168.1.1 on GigabitEthernet0/0, 00:14:22
+  Routing Descriptor Blocks:
+  * 192.168.1.1, from 203.0.113.1, via GigabitEthernet0/0
+      Route metric is 0, traffic share count is 1
