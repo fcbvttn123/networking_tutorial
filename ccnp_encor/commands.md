@@ -19,3 +19,10 @@ Routing entry for 203.0.113.0/24
   Routing Descriptor Blocks:
   * 192.168.1.1, from 203.0.113.1, via GigabitEthernet0/0
       Route metric is 0, traffic share count is 1
+
+# arp
+R1# show arp
+R1# show arp <ip-address> detail
+R1# clear arp
+R1(config)# arp <ip-address> <mac-address> arpa
+R1(config)# [no] ip arp proxy disable # proxy arp
