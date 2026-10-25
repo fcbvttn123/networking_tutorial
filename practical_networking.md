@@ -10,6 +10,7 @@
   - [Cisco StackWise vs Cisco StackWise Virtual](#cisco-stackwise-vs-cisco-stackwise-virtual)
   - [STP in Stacking Technology](#stp-in-stacking-technology)
   - [Steps stacking switches](#steps-stacking-switches)
+  - [Topology](#topology)
 - [Firewall Design](#firewall-design)
   - [HA with Direction Connection](#ha-with-direction-connection)
   - [Connect to Distribution Layer](#connect-to-distribution-layer)
@@ -175,6 +176,16 @@
         no shutdown
     exit
     ```
+
+## Topology
+
+- Overview: the access switches use **10G uplinks**, and the distribution switches use **10G SFP+ transceivers**
+
+- Insert Expansion Module `C9300-NM-8X` for **Access Switch 1** and **Access Switch 2**
+
+- Connect **2 links from Access Switch 1** and **2 links from Access Switch 2** up to the **Distribution Stack**
+
+- **4-link 40Gbps** logical Port-Channel
 
 
 # Firewall Design
