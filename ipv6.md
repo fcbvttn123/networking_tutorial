@@ -101,6 +101,8 @@ R1# show ipv6 interface brief
     
     - and hosts can automatically **generate their own interface ID**, potentially using `EUI-64`
 
+- IPv6 addresses generated using EUI-64 can be routable on the public internet, **provided they are paired with a GUA prefix**
+
 ## How to convert the MAC Address
 
 - Divide the MAC address in half
