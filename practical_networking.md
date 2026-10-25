@@ -9,6 +9,7 @@
 - [Access/Distribution Layer Design](#accessdistribution-layer-design)
   - [Cisco StackWise vs Cisco StackWise Virtual](#cisco-stackwise-vs-cisco-stackwise-virtual)
   - [STP in Stacking Technology](#stp-in-stacking-technology)
+  - [Steps stacking switches](#steps-stacking-switches)
 - [Firewall Design](#firewall-design)
   - [HA with Direction Connection](#ha-with-direction-connection)
   - [Connect to Distribution Layer](#connect-to-distribution-layer)
@@ -115,6 +116,65 @@
     - connecting a cheap unmanaged switch
 
     - creating a loop through a wireless bridge
+
+## Steps stacking switches
+
+- Pre-Stacking Preparation & Firmware Matching
+
+    - All switches joining the stack must run the exact same IOS-XE software version
+
+    - Ensure all switches in the stack have the same license tier level (e.g., all Network Essentials or all Network Advantage)
+
+- Power Down All Switches: Never hot-plug StackWise cables or modules while the switches are powered on
+
+- Connect StackWise Cables in a Ring Topology
+
+- Power on ONLY the first switch (the one you want to be your primary Master). Let it boot up completely. Because it's the only one active, it claims `Switch 1`
+
+    - Once it's booted, set its priority so it always wins future master elections:
+
+        ```bash
+        configure terminal
+            switch 1 priority 15
+            end
+        write memory
+        ```
+
+- Power on the second switch in your rack. As it boots and detects the StackWise ring, it will automatically recognize the existing stack and assign itself `Switch 2`
+
+- Power on the third switch, and it will automatically become `Switch 3`
+
+- Once all four switches have booted up and joined the ring, you can configure the priorities right from the single master console (`Switch 1`)
+
+    ```bash
+    configure terminal
+        switch 1 priority 15
+        switch 2 priority 10
+        end
+    write memory
+    ```
+
+- Check stack and member status: `show switch`
+
+- Management IP: connect your laptop to the console port of the Master switch (Switch 1), configure one single management IP address that covers the entire stack
+
+    ```bash
+    # management SVI
+    interface Vlan99
+        description Management SVI for Access Stack
+        ip address 192.168.99.10 255.255.255.0
+        no shutdown
+    exit
+    ip default-gateway 192.168.99.1
+
+    # assign the Management Access Port
+    interface GigabitEthernet3/0/48
+        description Uplink to Management Network
+        switchport mode access
+        switchport access vlan 99
+        no shutdown
+    exit
+    ```
 
 
 # Firewall Design
