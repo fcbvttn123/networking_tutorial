@@ -17,7 +17,7 @@
 
 # Ethernet MTU (Interface MTU)
 
-- The Ethernet MTU specifies the maximum payload size of frames **sent/received by an interface**
+- The Ethernet MTU specifies the maximum payload size of **frames** (Layer 3 and up - not the Layer 2 header or trailer) sent/received by an interface
 
 - This **includes L2 and L3 interfaces**, since both send Ethernet frames
 
@@ -46,6 +46,53 @@
 
 
 # IP MTU
+
+- The IP MTU specifies the maximum size of an IP packet before it needs fragmentation (**default 1500 bytes**)
+
+    - If the DF-bit is not set, packets larger than the IP MTU are fragmented
+
+    - If the DF-bit is set, packets larger than the IP MTU are dropped
+
+- It includes the **IP header, the TCP/UDP header, and all upper-layer data** (application payload)
+
+- IP MTU **only applies to Layer 3 ports**; Layer 2 ports (on a switch) are not L3-aware
+
+- **IPv4 Header Fields** involved in the IP Fragmentation
+
+    - **Identification** Field (16 bits): fragments have the same ID
+
+    - **Flags** Field (3 bits)
+    
+        - bit 0 is always 0
+        
+        - bit 1 is the DF bit
+        
+        - bit 2 is for more-fragments - identify the last fragment of the packet (every fragments, except the last one, have this bit set)
+
+    - **Fragment Offset** Field: identify the position of the fragment of the original packet
+
+- With an Ethernet MTU of 1600 and IP MTU of 1500, the largest IP packet R1 can send without fragmentation is 1500 bytes - **the IP MTU takes precedence**
+
+- The Ethernet MTU and the IP MTU should be the same, if you increase the size of the Ethernet MTU, it will increase the size of the IP MTU
+
+- Check IP MTU of an interface
+
+    ```bash
+    Router# show ip interfaces GigabitEthernet0/1
+    GigabitEthernet0/1 is up, line protocol is up
+    Internet address is 192.168.1.1/24
+    Broadcast address is 255.255.255.255
+    Address determined by setup command
+    MTU is 1500 bytes
+    Helper address is not set
+    ```
+
+- Change IP MTU for an interface
+
+    ```bash
+    Router(config)# interface GigabitEthernet0/1
+    Router(config-if)# ip mtu 9000
+    ```
 
 
 # System MTU
