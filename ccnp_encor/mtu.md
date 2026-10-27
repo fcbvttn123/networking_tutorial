@@ -97,6 +97,27 @@
 
 # System MTU
 
+- A System MTU is a global configuration setting on a network device that defines the default maximum packet size allowed across all supported interfaces
+
+- The MTU, set on the interface, takes the precedence
+
+- Not all system supports System MTU
+
+- Configuration
+
+```bash
+# show system mtu
+SW# show system mtu
+System MTU size is 1500 bytes # Eth MTU for 10Mbps/100Mbps interfaces
+System Jumbo MTU size is 1500 bytes # Eth MTU for 1Gbps/10Gbps interfaces
+System Alternate MTU size is 1500 bytes # A third value that can be assigned to particular interfaces
+Routing MTU size is 1500 bytes # IP MTU for routed port
+
+# set system mtu
+SW(config)# system mtu 1600
+SW(config)# system mtu jumbo 9000
+```
+
 
 # MTU Example: GRE Tunnels
 
