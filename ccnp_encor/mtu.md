@@ -102,5 +102,11 @@ SW(config)# system mtu jumbo 9000
 
 # MTU Example: GRE Tunnels
 
+- When using GRE, **a GRE header** (4 bytes) and **additional IP header** (20 bytes) are **added to the original IP packet**
+
+- If the original IP MTU of 1500 is used, the total Ethernet payload will be **1524 bytes**, exceeding the 1500 byte MTU
+
+- So, **the IP MTU should be adjusted to 1476** (1500 – 24) to bring the total maximum Eth payload size to 1500 bytes
+
 
 # Path MTU Discovery
