@@ -1,29 +1,12 @@
-# What MTU is
+# Ethernet MTU (Interface MTU) - 1500 bytes
 
-- The Maximum Transmission Unit is **the largest unit** a device can send/receive from an interface
+- It is the maximum **Payload Size** an Ethernet Frame can carry, **excluding the Ethernet Header and FCS**
 
-- The unit is **usually an IP packet** (including the IP header)
+    - Ethernet Frame = Ethernet Header (14 bytes) + Ethernet Payload (1500 bytes) + FCS (4 bytes)
 
-- This **doesn't include the L2 header/trailer**
+    - IP Packet (Ethernet Payload) = IP Header (20 bytes) + IP Payload (1480 bytes)
 
-- 2 separate concepts:
-
-    - **Ethernet MTU**: only the **L3 Header, L4 Header and the Data**
-
-    - **IP MTU**: only the IP Header (we have MSS for L4 Header)
-
-- The default MTU is **1500 bytes**
-
-
-# Ethernet MTU (Interface MTU)
-
-- The Ethernet MTU specifies the maximum payload size of **frames** (Layer 3 and up - not the Layer 2 header or trailer) sent/received by an interface
-
-- This **includes L2 and L3 interfaces**, since both send Ethernet frames
-
-- MTU is checked at **both ingress (receiving) and egress (sending)**
-
-- If a frame's payload (L3 header + L4 header + Data) is larger than **the interface's MTU**, it will be dropped
+    - IP Payload = TCP Header (20 bytes) + App Data (1460 bytes)
 
 - The default **Ethernet MTU** is 1500 bytes
 
@@ -45,15 +28,13 @@
     ```
 
 
-# IP MTU
+# IP MTU - 1500 bytes
 
-- The IP MTU specifies the maximum size of an IP packet before it needs fragmentation (**default 1500 bytes**)
+- It is the maximum size of an **IP Packet** (Ethernet Payload) that can be sent over a particular L3 interface (**default 1500 bytes**)
 
     - If the DF-bit is not set, packets larger than the IP MTU are fragmented
 
     - If the DF-bit is set, packets larger than the IP MTU are dropped
-
-- It includes the **IP header, the TCP/UDP header, and all upper-layer data** (application payload)
 
 - IP MTU **only applies to Layer 3 ports**; Layer 2 ports (on a switch) are not L3-aware
 
