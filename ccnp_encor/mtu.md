@@ -110,3 +110,17 @@ SW(config)# system mtu jumbo 9000
 
 
 # Path MTU Discovery
+
+- PMTUD allows a device to dynamically discover the lowest MTU value in the path to a destination
+
+    - It is enabled on most modern devices by default (ie. Windows PCs)
+
+    - It is designed to avoid fragmentation of IP packets
+
+- Hosts with PMTUD enabled set the DF-Bit on outgoing IP packets
+
+    - Any device along the path with an MTU smaller than the packet will drop it
+
+    - That device will send an ICMP Fragmentation Needed message back to the packet's source host
+    
+    - The source host will then reduce the MTU and re-send
