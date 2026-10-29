@@ -53,3 +53,10 @@ SW# show system mtu
   Routing MTU size is 1500 bytes # IP MTU for routed port
 SW(config)# system mtu 1600
 SW(config)# system mtu jumbo 9000
+
+# mss
+R1(config)# ip tcp mss <bytes>
+R1(config-if)# ip tcp adjust-mss <bytes>
+R1# debug ip tcp adjust-mss
+R1# debug ip tcp transactions
+R1# show tcp
