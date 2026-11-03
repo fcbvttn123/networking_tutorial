@@ -47,6 +47,10 @@
   - [How to edit an encrypted file later](#how-to-edit-an-encrypted-file-later)
   - [Encrypt a Single String](#encrypt-a-single-string)
   - [Run Your Playbook with the Vault Password](#run-your-playbook-with-the-vault-password)
+- [Variable Evaluation Order](#variable-evaluation-order)
+  - [Inventory-Level Variables (Lowest Priority)](#inventory-level-variables-lowest-priority)
+  - [Play-Level Variables (Higher Priority)](#play-level-variables-higher-priority)
+  - [Extra Vars (Highest Priority)](#extra-vars-highest-priority)
 
 
 # Lab Setup (EVE-NG)
@@ -1075,3 +1079,41 @@ ansible-galaxy collection list
   - Save your vault password in a local text file `(e.g., .vault_pass.txt)`
 
   - Point Ansible to that file using `--vault-password-file`: `ansible-playbook -i inventory.ini site.yml --vault-password-file .vault_pass.txt`
+
+
+# Variable Evaluation Order
+
+## Inventory-Level Variables (Lowest Priority)
+
+- Ansible first reads the **static inventory files** (`hosts.ini` or `hosts.yml`)
+
+- **All Group Defaults:** Variables defined in `all` or `group_vars/all.yml`
+
+- **Child Group Variables:** Variables defined in specific group folders, such as `group_vars/ios.yml` or `group_vars/localhost.yml`
+
+- **Host-Specific Variables:** Variables defined directly under an individual host definition or in `host_vars/<hostname>.yml`
+
+## Play-Level Variables (Higher Priority)
+
+- Play `vars:` section: Variables explicitly defined under the `vars:` block of your play
+
+  ```yaml
+  - name: Generate consolidated network report
+    hosts: localhost
+    connection: local
+    gather_facts: false
+
+    vars:
+      report_directory: "{{ playbook_dir }}/output"
+
+    roles:
+      - report
+  ```
+
+- Play `vars_files:`: External variable files imported via `vars_files:` within the play
+
+- Role Defaults & Vars: Defaults defined in a role's `defaults/main.yml` (lowest priority role vars) and `vars/main.yml`
+
+## Extra Vars (Highest Priority)
+
+- Command Line `-e` / -`-extra-vars`: Any variables passed directly in your terminal command (e.g., `ansible-playbook playbook.yml -e "report_directory=/tmp/reports"`) override everything else, regardless of what is set in inventory or playbooks
