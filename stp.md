@@ -1,281 +1,148 @@
 # Contents
 
 - [Contents](#contents)
-- [STP Types](#stp-types)
-- [BPDU (`hello` message)](#bpdu-hello-message)
-- [STP Convergence Process](#stp-convergence-process)
-- [Negotiation Order](#negotiation-order)
-- [Port Types (Classic STP)](#port-types-classic-stp)
-  - [Root Port](#root-port)
-  - [Designated Ports](#designated-ports)
-  - [Non-designated Ports](#non-designated-ports)
-- [Port States (Classic STP)](#port-states-classic-stp)
-  - [Blocking State](#blocking-state)
-  - [Listening State (Forward Delay Timer)](#listening-state-forward-delay-timer)
-  - [Learning State (Forward Delay Timer)](#learning-state-forward-delay-timer)
-  - [Forwarding State](#forwarding-state)
-- [STP Timers](#stp-timers)
-  - [Hello Time](#hello-time)
-  - [Max Age (Classic STP)](#max-age-classic-stp)
-  - [Max Age (RSTP)](#max-age-rstp)
-  - [Forward Delay](#forward-delay)
-- [Root Bridge Election](#root-bridge-election)
-- [Classic STP Cost](#classic-stp-cost)
+- [Classic STP](#classic-stp)
+  - [How STP Works](#how-stp-works)
+  - [BPDU (Bridge Protocol Data Unit)](#bpdu-bridge-protocol-data-unit)
+  - [Root Bridge Election (Bridge ID)](#root-bridge-election-bridge-id)
+  - [STP Port Roles](#stp-port-roles)
+  - [Root Port Election](#root-port-election)
+  - [Designated Port Election](#designated-port-election)
+  - [Port States](#port-states)
+  - [Port State Progression](#port-state-progression)
+  - [Timers](#timers)
 - [Verification Commands](#verification-commands)
   - [`show spanning-tree` (Check STP status)](#show-spanning-tree-check-stp-status)
   - [`show spanning-tree interface <interface_id>` (See STP details for an interface)](#show-spanning-tree-interface-interface_id-see-stp-details-for-an-interface)
   - [`show spanning-tree detail` (Look for STP topology changes)](#show-spanning-tree-detail-look-for-stp-topology-changes)
-- [Root Port Election Process](#root-port-election-process)
-- [Designated Port Election Process](#designated-port-election-process)
 - [RSTP](#rstp)
   - [Differences](#differences)
   - [RSTP Cost](#rstp-cost)
-  - [Port States](#port-states)
+  - [Port States](#port-states-1)
   - [Port Roles](#port-roles)
   - [Why sending BPDUs in Discarding (and DP) is critical](#why-sending-bpdus-in-discarding-and-dp-is-critical)
   - [RSTP Security \& Protection Features](#rstp-security--protection-features)
   - [When a new SW is added](#when-a-new-sw-is-added)
 
 
+# Classic STP
 
+## How STP Works
 
-# STP Types
+- Classic STP follows four major steps:
 
-- IEEE 802.1D
+  - Elect the Root Bridge
 
-- IEEE 802.1w (RSTP)
+  - Elect Root Ports
 
-    - Faster Convergence
-    
-    - Run STP instance for all VLANs
+  - Elect Designated Ports
 
-- IEEE 802.1s (Multiple Spanning Tree)
+  - Block redundant paths: ports that aren't RP and DP become NDP and remain non-forwarding
 
-- Cisco proprietary - based on 802.1D (PVST+)
+## BPDU (Bridge Protocol Data Unit)
 
-- Cisco proprietary - based on 802.1w (RPVST+)
+- Classic STP primarily uses two BPDU types:
 
+  - **Configuration BPDU (Hello Packet):** A multicast network packet used to elect a Root Bridge, discover neighbors, and continuously monitor the network topology to prevent loops
 
-
-
-# BPDU (`hello` message)
-
-- The `BPDU` (Bridge Protocol Data Unit) is **multicast** by the switches
-
-  - The standard IEEE 802.1D address for standard STP, RSTP, and MSTP is `01:80:C2:00:00:00`
-
-  - Cisco's PVST uses multicast address `01-00-0C-CC-CC-CD` for non-native VLANs
-
-- The `BPDU`, contains
-
-    - Root Bridge ID
-    
-    - Sender Bridge ID
-    
-    - Root Path Cost
-
-    - Port ID = Port ID + Port Number `Interface: g0/1, Role: root, Sts: FWD, Cost 4, Prio.Nbr: 128.1, Type: P2p`
-
-    - Expiration Fields
-
-        - Message Age
-        
-            - The amount of time that has elapsed since the Root Bridge originally generated the `BPDU`
-            
-            - The Root sets this to 0 seconds, and each switch that relays the `BPDU` increments this value (typically by adding 1 second or adding the propagation delay)
-
-        - Max Age: The maximum allowed age for a `BPDU` (default is 20 seconds)
-
-- When the switches boot up, the SBID and the RBID is **identical** on each single switch in the network
-
-    - The switches then broadcast the `BPDU` frame with this information to the neighbors
-
-    - No `BPDU` Loop because switches consume `BPDUs` locally instead of flooding them
-
-- If a SW receives a Hello `BPDU` on an interface, it knows that interface is connected to another SW (routers, PCs, etc. do not use STP) so they do not send Hello BPDUs
+  - **Topology Change Notification (TCN) BPDU:** Notifies the network of a topology change
 
 - The Root Bridge generates a Configuration `BPDU` every Hello Time interval (default: 2 seconds)
 
-    - Non-root switches do not generate `BPDUs` on their own timer
+  - Non-root switches do not generate `BPDUs` on their own timer
 
-    - They wait to receive a `BPDU` on their Root Port, update the message age and cost, and then relay (forward) out all Designated Ports
+  - They wait to receive a `BPDU` on their Root Port, update the message age and cost, and then relay (forward) out all Designated Ports
 
-    - As long as the relayed `BPDUs` arrive before the **Max Age timer** expires (default: 20 seconds), non-root SWs stay quiet and simply pass them down the tree
+  - As long as the relayed `BPDUs` arrive before the **Max Age timer** expires (default: 20 seconds), non-root SWs stay quiet and simply pass them down the tree
 
+- When the switches boot up, the SBID and the RBID is identical on each single switch in the network
 
+## Root Bridge Election (Bridge ID)
 
+- Every switch has a Bridge ID (BID)
 
-# STP Convergence Process
+- The switch with the **lowest BID** wins the Root Bridge election
 
-- Initialization: When **a switch boots** up or **a link goes up**, all active ports start in the Blocking State by default
+- The Bridge ID consists of:
 
-    - When the switches boot up, the BID and the RBID (of the BPDU sent) is **identical** on each single switch in the network
+  - **Bridge Priority: Default 32768**
 
-- Role Election: While in this initial blocking phase, the switches exchange BPDUs to elect the Root Bridge and decide Port Roles
+  - Extended System ID: VLAN ID in Cisco PVST+
 
-- When a new switch is added to the topology
+  - MAC Address: Switch MAC address used in the BID
 
-    - A new SW never stays silent. The moment it comes up, it:
+- The comparison happens in this order:
 
-    - Sends its own BPDUs (claiming “I am the root”)
+  - Lowest Bridge Priority: most switches have the same BID - 32768
 
-    - Receives BPDUs from existing switches
+  - Lowest MAC address if priorities are equal
 
-    - Compares them
+## STP Port Roles
 
-    - Updates its role accordingly
+- Root Port (RP):	Best path from a non-root switch to the Root Bridge
 
-    - Example
+  - Every non-root switch has exactly one Root Port per spanning-tree instance
 
-      - Switch B receives a superior BPDU from the newly connected Switch A
+  - A Root Bridge does not have a Root Port
 
-      - SW B compares SW A's BID against the current Root and agrees SW A is the Root
+- Designated Port (DP):	Best forwarding port for a particular segment
 
-      - SW B immediately updates its local Root ID to SW A and recalculates its root cost
+- Non-designated Port (NDP): Port that is blocked to prevent loops
 
-      - SW B relays this superior BPDU out all of its active DP to downstream SWs right away
+## Root Port Election
 
-      - If the receiving port on SW B was already in Forwarding, it immediately becomes the RP and stays in Forwarding
+- A Root Port is the port with the **lowest total path cost** to the Root Bridge
 
-      - Any existing port that now needs to switch roles will enter the 30 seconds to transition LST, LRN and FWD
+- STP uses **path cost** to determine the best route
 
-- When a Computer is connected
+- Classic short **path cost values**
 
-    - The SW sends BPDUs and receives none — but it does NOT “wait for confirmation.”
+  - 10 Mbps: 100
 
-    - It becomes a DP by default because **it is the only bridge on that LINK**
+  - 100 Mbps: 19
 
+  - 1 Gbps: 4
 
+  - 10 Gbps: 2
 
+- If two paths have the same cost, STP uses tie-breakers in this order:
 
-# Negotiation Order
+  - Lowest upstream (sender) Bridge ID
 
-- [1. Elect Root Bridge] ➔ [2. Assign Port Roles] ➔ [3. Transition Port States]
+  - Lowest upstream (sender) Port ID
 
-- They happen in a sequential, dependent order, not all at once
+  - Lowest local Port ID
 
-- The election and role assignments happen almost immediately upon receiving BPDUs
+## Designated Port Election
 
-- The 15-second timers exist only to hold non-designated ports in safety states while the topology stabilizes
+- A Designated Port (DP) is selected for every **network segment**
 
-  - 15s Listening State: Ports are assigned their roles (RP, DP) right away, but they are held in Listening for 15 seconds
+- The switch, advertising the best path toward the Root Bridge, wins the Designated Port election for that segment
 
-  - 15s Learning State: Ports transition to Learning for another 15 seconds to populate their MAC address tables and avoid flooding frames
+- The comparison follows these principles: Lowest Root Path Cost, Lowest Bridge ID, Lowest Port ID
 
-  - **RSTP** completely eliminates the fixed 15-second Listening and Learning timers for point-to-point (P2p) links using a **Proposal/Agreement** handshake
+- The Root Bridge always has its active ports as Designated Ports
 
+## Port States
 
+| State | Forwards frames | Learns MAC addresses |
+| --- | --- | --- |
+| Blocking | No | No |
+| Listening | No | No |
+| Learning | No | Yes |
+| Forwarding | Yes | Yes |
 
+## Port State Progression
 
-# Port Types (Classic STP)
+- The normal transition when a blocked port is selected to become a forwarding port is: Blocking → Listening → Learning → Forwarding
 
-## Root Port
+## Timers
 
-- All the ports, connecting to the root bridge, on non-bridge switches are root ports
+- Hello: 2 seconds - Interval between configuration BPDUs from the Root Bridge
 
-- Forwarding State
+- Forward Delay: 15 seconds	- Duration of Listening and Learning states
 
-## Designated Ports
-
-- All ports on the Root Bridge
-
-- Other ports which are not NDP
-
-- There is only one DP for each **network segment** (the physical link between two switches)
-
-- Forwarding State
-
-## Non-designated Ports
-
-- Blocked State
-
-
-
-
-# Port States (Classic STP)
-
-## Blocking State
-
-- The port only receives the BPDU frames
-
-## Listening State (Forward Delay Timer)
-
-- The ports in this state can send and receive BPDU frames
-
-- This state has 15 seconds (we can change this duration) to process BPDUs it receives
-
-    - The port in this state DOESN'T learn MAC addresses
-
-    - The switch uses the BPDU information to determine whether the port should be RP, DP, or NDP
-
-## Learning State (Forward Delay Timer)
-
-- The main purpose of this state is to learn MAC addresses before forwarding normal traffic
-
-## Forwarding State
-
-- The port can process normal traffic
-
-
-
-
-# STP Timers
-
-## Hello Time
-
-- What it is: How often the Root Bridge sends BPDUs
-
-- Default is 2 seconds
-
-## Max Age (Classic STP)
-
-- What it is: How long a SW will keep a BPDU before considering it invalid
-
-- Default is 20 seconds 
-
-- If a SW does not hear from the root for 20 seconds, it recalculates the topology
-
-## Max Age (RSTP)
-
-- Switches send BPDUs every 2 seconds
-
-- If a neighbor misses 3 consecutive BPDUs (6 seconds), the link is declared down
-
-- RSTP will promote the Alternate Port to become the new Root Port immediately (0 seconds delay)
-
-## Forward Delay
-
-- What it is: How long a port stays in Listening and Learning states
-
-- Default is 15 secs
-
-
-
-
-# Root Bridge Election
-
-- The root bridge election is determined by the **Bridge ID** (contained inside BPDUs)
-
-- `BID = Bridge Priority + VLAN ID + MAC Address`
-
-    - By default: Bridge Priority is 32768 on all switches
-
-    - So, the MAC Address is often the tie breaker, **the lowest MAC wins**
-
-- A switch identifies itself as the Root Bridge if it has the lower MAC address and Priority
-
-
-
-
-# Classic STP Cost
-
-- 10Gps: 2
-
-- 1Gps: 4
-
-- 100Mps: 19
-
-
+- Max Age:	20 seconds - How long received STP information remains valid
 
 
 # Verification Commands
@@ -324,59 +191,6 @@ VLAN0001 is executing the ieee compatible Spanning Tree protocol
           from GigabitEthernet0/24
   Times:  hold 1, topology change 35, notification 2
 ```
-
-
-
-
-# Root Port Election Process
-
-- The Root Bridge generates a configuration BPDU containing **a Root Path Cost of 0** and **broadcasts it** out all its active ports
-
-- Each SW relies entirely on local information exchanged through BPDU to determine its Root Port
-
-- Every switch receives BPDUs from neighboring SWs on its operational ports. Each incoming BPDU contains critical parameters:
-
-  - Root Bridge ID
-
-  - Root Path Cost: the total cost from the sending neighbor to reach the Root Bridge
-
-  - Bridge ID (BID)
-
-  - Port ID (PID): the specific port number on the neighbor switch from which the BPDU was sent
-
-- When a SW receives a BPDU on an **ingress port**, it adds its own port speed cost (the Ingress Port Cost) to the Root Path Cost declared inside the incoming BPDU
-
-- Tie-Breaker Algorithm
-
-  ```bash
-  [ 1. Lowest Total Root Path Cost ]
-                  │ (Tie)
-                  ▼
-  [ 2. Lowest Neighbor Bridge ID (BID) ]
-                  │ (Tie)
-                  ▼
-  [ 3. Lowest Neighbor Port ID (PID) ]
-                  │ (Tie)
-                  ▼
-  [ 4. Lowest Local Port ID ]
-  ```
-
-
-
-
-# Designated Port Election Process
-
-```bash
-[ 1. Lowest Root Path Cost ]
-              │ (Tie)
-              ▼
-[ 2. Lowest Sender Bridge ID (BID) ]
-              │ (Tie)
-              ▼
-[ 3. Lowest Sender Port ID (PID) ]
-```
-
-
 
 
 # RSTP
