@@ -52,3 +52,30 @@
 ![BGP RR](./images/bgp_route_reflector.png)
 
 - A BGP Route Reflector (RR) is a designated router in an Internal BGP (iBGP) network that redistributes (reflects) routing updates between iBGP peers
+
+
+# Neighbor Formation and States
+
+## Neighbor Formation
+
+- Idle State
+
+- 3-way TCP Handshake
+
+- Active State
+
+- Open Sent State: R1 to R2
+
+- Open Confirm State: R2 to R1
+
+- Established State
+
+## Messages After The Neighbor Formation
+
+- Open Message: includes BGP Version Number, Local AS Number, Hold Time, BGP Router ID, Optional Parameters
+
+- Update Message: contain withdrawn routes, path attributes and NLRI
+
+- Notification Message: contains an error code, an error subcode and information about the error
+
+- Default Timers: Keepalive - 60 seconds, Holdtime 180 seconds
