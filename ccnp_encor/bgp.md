@@ -1,3 +1,17 @@
+# Table of contents
+
+- [Table of contents](#table-of-contents)
+- [BGP Characteristics](#bgp-characteristics)
+- [iBGP Full Mesh](#ibgp-full-mesh)
+  - [What it is and its problem](#what-it-is-and-its-problem)
+  - [BGP Confederation](#bgp-confederation)
+  - [BGP Route Reflectors](#bgp-route-reflectors)
+- [Neighbor Formation and States](#neighbor-formation-and-states)
+  - [Neighbor Formation](#neighbor-formation)
+  - [Messages After The Neighbor Formation](#messages-after-the-neighbor-formation)
+- [BGP Basic Config](#bgp-basic-config)
+
+
 # BGP Characteristics
 
 - **Path Vector Protocol**
@@ -39,13 +53,11 @@
 
 ![BGP Confederation](./images/bgp_confederation.png)
 
-- A BGP confederation is **a scaling mechanism** that divides a single large AS into multiple smaller, interconnected sub-ASes to avoid the heavy overhead of a full-mesh iBGP peering requirement
-
 - Sub-AS Division: The large AS is broken down into smaller sub-ASes, typically assigned private AS numbers (ranging from 64,512 to 65,535)
 
-- Routers inside the same sub-AS use standard iBGP rules
+- Routers inside the same sub-AS use standard **iBGP rules**
 
-- Connections between different sub-ASes inside the confederation use confederation eBGP sessions. These sessions behave much like eBGP — retaining next-hop behavior and avoiding the iBGP full-mesh constraint — while preserving special attributes like the confederation sequence
+- **Connections between different sub-ASes** inside the confederation use confederation **eBGP** sessions. These sessions behave much like eBGP — retaining next-hop behavior and avoiding the iBGP full-mesh constraint — while preserving special attributes like the confederation sequence
 
 ## BGP Route Reflectors
 
@@ -79,3 +91,16 @@
 - Notification Message: contains an error code, an error subcode and information about the error
 
 - Default Timers: Keepalive - 60 seconds, Holdtime 180 seconds
+
+
+# BGP Basic Config
+
+![BGP Topology](./images/bgp_basic_config.png)
+
+```bash
+R2(config)# router bgp 64495
+R2(config-router)# neighbor 198.51.100.1 remote remote-as 64500
+R2(config-router)# network 203.0.113.0 mask 255.255.255.0
+R2(config-router)# end
+R2(config)# do show ip bgp
+R2(config)# do show ip route
