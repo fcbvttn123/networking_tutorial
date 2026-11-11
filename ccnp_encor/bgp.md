@@ -9,6 +9,7 @@
 - [Neighbor Formation and States](#neighbor-formation-and-states)
   - [Neighbor Formation](#neighbor-formation)
   - [Messages After The Neighbor Formation](#messages-after-the-neighbor-formation)
+  - [Verification Commands](#verification-commands)
 - [BGP Basic Config](#bgp-basic-config)
 
 
@@ -91,6 +92,42 @@
 - Notification Message: contains an error code, an error subcode and information about the error
 
 - Default Timers: Keepalive - 60 seconds, Holdtime 180 seconds
+
+## Verification Commands
+
+```bash
+R2(config)# router bgp 64495
+R2(config-router)# neighbor 198.51.100.1 remote-as 64500
+R2(config-router)# network 203.0.113.0 mask 255.255.255.0
+R2(config-router)# end
+-----------------------------------------------------------------------------------------
+R2# show ip bgp summary
+-----------------------------------------------------------------------------------------
+BGP router identifier 192.168.1.2, local AS number 64495
+BGP table version is 4, main routing table version 4
+2 network entries using 288 bytes of memory
+2 path entries using 160 bytes of memory
+2 BGP path attribute entries using 288 bytes of memory
+BGP scan interval 60 secs, BGP holddown interval is 180 secs
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/State/PfxRcd
+198.51.100.1    4  64500     142     145        4    0    0 02:15:30      1
+192.168.2.1     4  64495       0       0        1    0    0    00:00:15  Active
+10.10.10.2       4    65002   12500    12600    25      0    0     5d12h      150
+10.10.10.3       4    65003   0        0         0      0    0     00:05:12   Idle
+10.10.10.4       4    65004   0        0         0      0    0     00:02:30   Connect
+10.10.10.6       4    65006   10       5         0      0    0     00:00:30   OpenSent
+10.10.10.7       4    65007   15       10        0      0    0     00:00:45   OpenConfirm
+10.10.10.8       4    65008   8500     8600      25     0    0     3d08h      200
+10.10.10.9       4    65009   4500     4600      25     0    0     1d04h      75
+```
+
+- `V`: BGP version (always 4 for modern BGP)
+
+- `Up/State/PfxRcd`: This is the most crucial column
+
+  - Time (e.g., `02:15:30`) / Number (e.g., `1`): If the session is up and healthy, it shows how long the session has been **Established (uptime)** followed by the **number of prefixes** received from that neighbor
+
+  - Active: The router is actively trying to initiate **a TCP connection to the peer** (TCP handshake failed or listener isn't up yet)
 
 
 # BGP Basic Config
