@@ -99,8 +99,17 @@
 
 ```bash
 R2(config)# router bgp 64495
-R2(config-router)# neighbor 198.51.100.1 remote remote-as 64500
+R2(config-router)# neighbor 198.51.100.1 remote-as 64500
 R2(config-router)# network 203.0.113.0 mask 255.255.255.0
 R2(config-router)# end
 R2(config)# do show ip bgp
 R2(config)# do show ip route
+```
+
+- These commands configure `eBGP`
+
+- Why it's `eBGP`:
+
+  - Different AS: The local router is configured in AS 64495, while the peer neighbor is in a completely different AS
+
+  - `iBGP` Rule: For `iBGP`, both routers must belong to the same AS
