@@ -25,7 +25,11 @@
 
 # BGP Characteristics
 
-- **Path Vector Protocol**
+- Path Vector Protocol
+
+  - BGP is called a path vector protocol because it advertises **the explicit sequence of Autonomous Systems** (known as the `AS_PATH` attribute) that a route has traveled through, rather than just a simple hop count or a distance metric
+
+  - Instead of just saying “this destination is 3 hops away” (like distance-vector protocols), BGP passes along the exact list of AS numbers (e.g., AS 100 -> AS 200 -> AS 300) the update has crossed
 
 - Routers form **neighborships**
 
