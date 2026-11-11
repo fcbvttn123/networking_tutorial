@@ -11,6 +11,16 @@
   - [Messages After The Neighbor Formation](#messages-after-the-neighbor-formation)
   - [Verification Commands](#verification-commands)
 - [BGP Basic Config](#bgp-basic-config)
+- [Path Selection (WE LOVE ORANGES AS ORANGES MEAN PURE REFRESHMENT)](#path-selection-we-love-oranges-as-oranges-mean-pure-refreshment)
+  - [8 Path Attributes](#8-path-attributes)
+  - [Weight](#weight)
+  - [Local Preference](#local-preference)
+  - [Originate](#originate)
+  - [AS Path Length](#as-path-length)
+  - [Origin Type](#origin-type)
+  - [Multi-exit Discriminator (MED)](#multi-exit-discriminator-med)
+  - [Paths](#paths)
+  - [Router ID](#router-id)
 
 
 # BGP Characteristics
@@ -150,3 +160,109 @@ R2(config)# do show ip route
   - Different AS: The local router is configured in AS 64495, while the peer neighbor is in a completely different AS
 
   - `iBGP` Rule: For `iBGP`, both routers must belong to the same AS
+
+
+# Path Selection (WE LOVE ORANGES AS ORANGES MEAN PURE REFRESHMENT)
+
+```bash
+Router# show ip bgp
+BGP table version is 22, local router ID is 10.1.1.1
+Status codes: s suppressed, d damped, h history, * valid, > best, i - internal, 
+              r RIB-failure, S Stale, m multipath, b backup-path, x best-external
+Origin codes: i - IGP, e - EGP, ? - incomplete
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 10.1.1.1/32      0.0.0.0                  0         32768 i
+* i10.2.2.2/32      172.16.1.2               0   100     0 i
+*>i10.9.9.9/32      192.168.3.2              0   100     0 10 10 i
+*>  172.16.1.0/24   0.0.0.0                  0         32768 i
+* i                 172.16.1.2               0   100     0 i
+*>  192.168.1.0     0.0.0.0                  0         32768 i
+* i192.168.3.0      172.16.1.2               0   100     0 i
+```
+
+- The route with the next hop as `0.0.0.0` mean it is directly connected
+
+- `>` means a preferred path
+
+## 8 Path Attributes
+
+- Weight
+
+- Local preference
+
+- Originate
+
+- AS Path Length
+
+- Origin Type
+
+- Multi-exit Discriminator (MED)
+
+- Paths
+
+- Router ID
+
+## Weight
+
+- Cisco Proprietery
+
+- A higher `Weight` is preffered
+
+- Commonly used to influence **outbound** routing decisions
+
+## Local Preference
+
+- Carried throughout a single AS
+
+- A higher `Local Preference` is preferred
+
+- Commonly used to influence **outbound** routing decisions
+
+## Originate
+
+- Paths, which are sourced locally, are preferred
+
+- A **locally originated path** refers to a route that was introduced into BGP directly by your own router or AS, rather than being learned from a remote peer via eBGP or iBGP
+
+- How a Route Becomes **Locally Originated**
+
+  - The `network` Command: You explicitly tell BGP to advertise a prefix using the network statement
+
+  - Redistribution: You inject routes from an IGP like OSPF or EIGRP, or static routes, directly into BGP using the `redistribute` command
+
+  - BGP Aggregation: You summarize multiple specific routes into a single summary prefix using the aggregate-address command
+
+## AS Path Length
+
+- The number of ASes in the AS_PATH path attribute
+
+  - What the **AS_PATH path attribute** looks like in a BGP Table: `*> 10.0.0.0/24    192.168.1.1              0    0 65001 65002 65003 i`
+
+  - `65001 65002 65003` is the `AS_PATH`
+
+- Lower AS path lengths are preferred
+
+- Commonly used to influence **inbound** routing decisions
+
+## Origin Type
+
+- Indicates how the route was injected into BGP: `i` (network command), `e` (EGP), `?` (redistributed)
+
+- `i` is preferred to `e`, and `e` is preferred to `?`
+
+## Multi-exit Discriminator (MED)
+
+- A parameter **set and advertised by routers in one AS** to influence the BGP path selection decisions of **routers in another AS**
+
+- A lower MED is preferred
+
+## Paths
+
+- Prefer eBGP path over iBGP path
+
+## Router ID
+
+- Most popular and most used if we don't manipulate everything
+
+- The route received from the router with the lowest router ID is preferred
