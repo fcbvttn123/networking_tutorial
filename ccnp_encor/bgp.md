@@ -21,6 +21,7 @@
   - [Multi-exit Discriminator (MED)](#multi-exit-discriminator-med)
   - [Paths](#paths)
   - [Router ID](#router-id)
+- [BGP Synchronization](#bgp-synchronization)
 
 
 # BGP Characteristics
@@ -270,3 +271,16 @@ Origin codes: i - IGP, e - EGP, ? - incomplete
 - Most popular and most used if we don't manipulate everything
 
 - The route received from the router with the lowest router ID is preferred
+
+
+# BGP Synchronization
+
+- BGP synchronization is **a legacy routing rule** stating that a BGP router must not advertise a prefix learned from an iBGP neighbor to an eBGP neighbor unless that same prefix is also present in the local IGP routing table (such as OSPF or EIGRP)
+
+- Purpose and Context
+
+  - Preventing Black Holes: It was designed for transit Autonomous Systems (AS) where not all internal routers run BGP. If a router learns a route via iBGP but intermediate routers inside the AS do not know the path via the IGP, packets crossing the AS could be dropped ("black-holed")
+
+  - IGP Validation: The rule forces the AS to ensure internal reachability before external announcement
+
+- Default State: Disabled by default (no synchronization) in modern Cisco IOS (since version 12.2(8)T) and other major network operating systems
