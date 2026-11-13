@@ -33,6 +33,16 @@
 
   - BGP is called a path vector protocol because it advertises **the explicit sequence of Autonomous Systems** (known as the `AS_PATH` attribute) that a route has traveled through, rather than just a simple hop count or a distance metric
 
+    - The AS_PATH attribute is formed step-by-step as a BGP route travels across ASes via eBGP, or remains unchanged during iBGP propagation
+
+    - When a router originates a prefix, the AS_PATH starts as empty within that local AS
+
+    - Whenever a BGP router exports/advertises the route to an eBGP neighbor in a different AS, it takes its own local AS number and prepends it to the front (left side) of the existing AS_PATH
+
+    - As a result, the most recently traversed AS is always on the far left, and the AS that originally created the route is on the far right
+
+    - When a router advertises the route to an `iBGP` neighbor within the same AS, the AS_PATH does not change. `iBGP` peers do not prepend the local AS number because they belong to the same administrative domain
+
   - Instead of just saying “this destination is 3 hops away” (like distance-vector protocols), BGP passes along the exact list of AS numbers (e.g., AS 100 -> AS 200 -> AS 300) the update has crossed
 
 - Routers form **neighborships**
@@ -43,7 +53,7 @@
 
 - A **TCP Port 179** Session is established between neighbors
 
-- **NLRI** (Network Layer Reachability Information): router advertisement
+- **NLRI** (Network Layer Reachability Information): route advertisement
 
     - It is the block of data that represents **a set of reachable IP prefixes** (or network destinations) **advertised between BGP peers**
 
