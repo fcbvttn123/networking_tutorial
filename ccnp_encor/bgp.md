@@ -22,6 +22,9 @@
   - [Paths](#paths)
   - [Router ID](#router-id)
 - [BGP Synchronization](#bgp-synchronization)
+- [Route Summarization \& eBGP Multi-hop](#route-summarization--ebgp-multi-hop)
+  - [Route Summarization](#route-summarization)
+  - [BGP Multi-hop](#bgp-multi-hop)
 
 
 # BGP Characteristics
@@ -284,3 +287,24 @@ Origin codes: i - IGP, e - EGP, ? - incomplete
   - IGP Validation: The rule forces the AS to ensure internal reachability before external announcement
 
 - Default State: Disabled by default (no synchronization) in modern Cisco IOS (since version 12.2(8)T) and other major network operating systems
+
+
+# Route Summarization & eBGP Multi-hop
+
+## Route Summarization
+
+- What it does: Combines multiple specific IP prefixes into a single, broader summary prefix (e.g., aggregating `192.168.1.0/24`, `192.168.2.0/24`, and `192.168.3.0/24` into `192.168.0.0/22`)
+
+- How it is configured: Typically applied using the `aggregate-address` command under BGP router configuration mode
+
+## BGP Multi-hop
+
+- What it does: Allows External BGP (eBGP) neighbors to establish a peering adjacency even when they are not physically or directly connected on the same subnet
+
+- Why it is needed: By default, eBGP sets the TTL of BGP packets to 1, meaning the peer must be exactly one hop away
+
+- The `ebgp-multihop 2` command increases the allowed TTL value so packets can survive traversing multiple intermediate routers
+
+  - `2` is the number of hops away
+
+- You must ensure underlying reachability (IGP like OSPF or static routes) exists between the peer IP addresses—frequently loopback interfaces
