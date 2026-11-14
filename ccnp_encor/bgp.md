@@ -25,6 +25,12 @@
 - [Route Summarization \& eBGP Multi-hop](#route-summarization--ebgp-multi-hop)
   - [Route Summarization](#route-summarization)
   - [BGP Multi-hop](#bgp-multi-hop)
+- [BGP Next Hop Self](#bgp-next-hop-self)
+  - [What it is](#what-it-is)
+  - [The Problem It Solves](#the-problem-it-solves)
+- [Lab](#lab)
+- [Notes](#notes)
+- [Todos](#todos)
 
 
 # BGP Characteristics
@@ -318,3 +324,102 @@ Origin codes: i - IGP, e - EGP, ? - incomplete
   - `2` is the number of hops away
 
 - You must ensure underlying reachability (IGP like OSPF or static routes) exists between the peer IP addresses—frequently loopback interfaces
+
+
+# BGP Next Hop Self
+
+## What it is
+
+- The `next-hop-self` command forces an iBGP router to rewrite the `NEXT_HOP` attribute of an advertised route to **its own local IP address** (typically its loopback) instead of keeping the original eBGP neighbor's IP address
+
+## The Problem It Solves
+
+- Default eBGP Behavior: When a router forwards a route learned via eBGP, it sets the `NEXT_HOP` to its own interface IP
+
+- Default iBGP Behavior: When an iBGP router advertises that route to another iBGP peer within the same AS, it preserves the original `NEXT_HOP` unchanged
+
+- The Issue: The receiving iBGP router may not have a route in its internal IGP (like OSPF or EIGRP) to reach that external `NEXT_HOP` IP. If the next hop is unreachable, the BGP route is considered invalid and dropped
+
+- By applying next-hop-self to the iBGP neighbor configuration, the advertising router says: "Use me as the next hop to reach this destination"
+
+  ```bash
+  router bgp 65001
+    neighbor 192.168.1.2 remote-as 65001
+    neighbor 192.168.1.2 next-hop-self
+  ```
+
+
+# Lab
+
+![BGP Lab](./images/bgp_lab.png)
+
+```bash
+R3(config)# router bgp 65001
+R3(config-router)# bgp router-id 3.3.3.3
+R3(config-router)# neighbor 10.1.1.2 remote-as 65001
+*Jun 29 17:33:06.515: %BGP-5-ADJCHANGE: neighbor 10.1.1.2 Up
+R3(config-router)# neighbor 198.51.100.2 remote-as 65002
+*Jun 29 17:33:42.276: % BGP-5-ADJCHANGE: neighbor 198.51.100.2 Up
+R3(config-router)# neighbor 198.51.100.6 remote-as 65004
+*Jun 29 17:34:04.877: %BGP-5-ADJCHANGE: neighbor 198.51.100.6 Up
+R3(config-router)# network 10.1.1.0 mask 255.255.255.0
+```
+
+![BGP Lab - R3 Routing Table](./images/bgp_lab_r3_routing_table.png)
+
+![BGP Lab - R3 Neighbors](./images/bgp_lab_r3_neighbors.png)
+
+![BGP Lab - R2 Routing Table](./images/bgp_lab_r2_routing_table.png)
+
+- R2 has a route to `5.5.5.5` in its BGP routing table but it cannot ping `5.5.5.5`
+
+- The reason is because R2 doesn't know how to reach the next hop `198.51.100.2`
+
+- R2 doesn't have a route to `198.51.100.2` in its IGP routing table
+
+  ![BGP Lab - R2 IGP Routing Table](./images/bgp_lab_r2_igp_table.png)
+
+- Solution: **BGP Next Hop Self**
+
+  ```bash
+  R3(config)# router bgp 65001
+  R3(config-router)# neighbor 10.1.1.2 next-hop-self
+  R3(config-router)# end
+  # reset bgp, the next hop on "R2 BGP Routing Table" should be 10.1.1.1 now
+  R3# clear ip bgp *
+  ```
+
+![BGP Lab - R1 Routing Table](./images/bgp_lab_r1_routing_table.png)
+
+  - Problem: R1 doesn't have many routes
+
+  - Reason: iBGP routers do not re-advertise routes learned from one iBGP peer to another iBGP peer
+
+  - Solution: Configure R2 as Route Reflector
+
+    ```bash
+    R2(config)# router bgp 65001
+    R2(config-router)# neighbor 172.16.1.1 route-reflector-client
+    R2(config-router)# neighbor 10.1.1.1 route-reflector-client
+    ```
+
+
+# Notes
+
+- iBGP routers do not re-advertise routes learned from one iBGP peer to another iBGP peer
+
+- Reset BGP: `R1# clear ip bgp *`
+
+- How do ISPs advertise a default route through eBGP
+
+  ```bash
+  # 203.0.113.2 is our public IP
+  router bgp 65002
+  neighbor 203.0.113.2 remote-as 65001
+  neighbor 203.0.113.2 default-originate
+  ```
+
+
+# Todos
+
+- BGP Peer Group
