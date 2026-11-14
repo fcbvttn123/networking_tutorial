@@ -31,6 +31,7 @@
 - [BGP Next Hop Self](#bgp-next-hop-self)
   - [What it is](#what-it-is)
   - [The Problem It Solves](#the-problem-it-solves)
+- [iBGP vs eBGP](#ibgp-vs-ebgp)
 - [Lab](#lab)
 - [Notes](#notes)
 - [Todos](#todos)
@@ -367,6 +368,18 @@ Origin codes: i - IGP, e - EGP, ? - incomplete
     neighbor 192.168.1.2 remote-as 65001
     neighbor 192.168.1.2 next-hop-self
   ```
+
+
+# iBGP vs eBGP
+
+| Feature | eBGP | iBGP |
+| --- | --- | --- |
+| AS | Defaults to 20 | Defaults to 200 |
+| TTL | Defaults to TTL = 1 | Defaults to TTL = 255 |
+| Loop Prevention | Uses the AS-Path attribute | Uses the BGP Split Horizon rule |
+| Topology Requirements | Does not require a full-mesh topology | Requires a full-mesh topology, **Route Reflectors**, or **Confederations** |
+| Next-hope Behavior | Changes the `NEXT-HOP` attribute to its own interface IP address when forwarding routes | Keeps the original `NEXT-HOP` unchanged by default (often requiring `next-hop-self`) |
+| Route Propagation | Can advertise routes learned from eBGP to both eBGP and iBGP peers | Cannot automatically re-advertise routes learned from one iBGP peer to other iBGP peers |
 
 
 # Lab
