@@ -32,6 +32,7 @@
   - [What it is](#what-it-is)
   - [The Problem It Solves](#the-problem-it-solves)
 - [iBGP vs eBGP](#ibgp-vs-ebgp)
+- [Why we need iBGP](#why-we-need-ibgp)
 - [Why we prioritize BGP over Static Routes for a Multihomed Network](#why-we-prioritize-bgp-over-static-routes-for-a-multihomed-network)
   - [How to use static routes for a multihomed network](#how-to-use-static-routes-for-a-multihomed-network)
   - [Limitations of Static Routes and Solutions with BGP](#limitations-of-static-routes-and-solutions-with-bgp)
@@ -385,6 +386,23 @@ Origin codes: i - IGP, e - EGP, ? - incomplete
 | Route Propagation | Can advertise routes learned from eBGP to both eBGP and iBGP peers | Cannot automatically re-advertise routes learned from one iBGP peer to other iBGP peers |
 
 
+# Why we need iBGP
+
+- To transport external routing information across an AS without losing critical BGP path attributes or overwhelming internal routing protocols
+
+- Preserving BGP Path Attributes
+
+  - IGPs like OSPF or EIGRP only understand link costs and will drop vital BGP metadata—such as AS_PATH, LOCAL_PREF, and COMMUNITY tags
+  
+  - iBGP passes these attributes intact across the transit backbone so administrators can control how traffic enters and leaves the AS
+
+- Handling the Full Internet Routing Table
+
+  - IGPs are built to map internal router infrastructure and will crash or run out of memory if forced to hold millions of external Internet routes learned via eBGP
+  
+  - iBGP isolates these massive routing tables
+
+
 # Why we prioritize BGP over Static Routes for a Multihomed Network
 
 ## How to use static routes for a multihomed network
@@ -490,5 +508,7 @@ R3(config-router)# network 10.1.1.0 mask 255.255.255.0
 
 
 # Todos
+
+- Why iBGP?
 
 - BGP Peer Group
