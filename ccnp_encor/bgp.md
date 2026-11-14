@@ -32,6 +32,9 @@
   - [What it is](#what-it-is)
   - [The Problem It Solves](#the-problem-it-solves)
 - [iBGP vs eBGP](#ibgp-vs-ebgp)
+- [Why we prioritize BGP over Static Routes for a Multihomed Network](#why-we-prioritize-bgp-over-static-routes-for-a-multihomed-network)
+  - [How to use static routes for a multihomed network](#how-to-use-static-routes-for-a-multihomed-network)
+  - [Limitations of Static Routes and Solutions with BGP](#limitations-of-static-routes-and-solutions-with-bgp)
 - [Lab](#lab)
 - [Notes](#notes)
 - [Todos](#todos)
@@ -380,6 +383,39 @@ Origin codes: i - IGP, e - EGP, ? - incomplete
 | Topology Requirements | Does not require a full-mesh topology | Requires a full-mesh topology, **Route Reflectors**, or **Confederations** |
 | Next-hope Behavior | Changes the `NEXT-HOP` attribute to its own interface IP address when forwarding routes | Keeps the original `NEXT-HOP` unchanged by default (often requiring `next-hop-self`) |
 | Route Propagation | Can advertise routes learned from eBGP to both eBGP and iBGP peers | Cannot automatically re-advertise routes learned from one iBGP peer to other iBGP peers |
+
+
+# Why we prioritize BGP over Static Routes for a Multihomed Network
+
+## How to use static routes for a multihomed network
+
+- Primary/Backup Configuration (Floating Static Routes)
+
+  - Point traffic out of ISP1's gateway with **AD = 1** `ip route 0.0.0.0 0.0.0.0 <ISP1-Next-Hop-IP> 1`
+
+  - Point traffic out of ISP2's gateway with **AD = 10** `ip route 0.0.0.0 0.0.0.0 <ISP2-Next-Hop-IP> 10`
+
+- Load-balencing traffic across 2 ISPs
+
+  - Relying on Equal-Cost Multi-Path (ECMP): you configure two default routes (`0.0.0.0/0`) pointing to the respective gateway/next-hop IP addresses of ISP1 and ISP2 with the same metric and administrative distance
+
+  - Policy-Based Routing (PBR)
+
+## Limitations of Static Routes and Solutions with BGP
+
+- The "Link Up, Internet Down" Problem
+
+  - With static routes, your edge router only evaluates the state of the local interface (e.g., whether the Ethernet link to the ISP's CPE is physically up)
+  
+  - If an upstream transit provider or the ISP's core network suffers an outage five hops away, your local interface remains up/up
+  
+  - Your router will continue blindly blackholing traffic down that path until manual intervention occurs or an IP SLA tracking probe times out
+
+- Zero Inbound Traffic Control
+
+  - Static routes only dictate outbound traffic
+  
+  - They offer zero capability to influence how the internet routes traffic back into your network
 
 
 # Lab
