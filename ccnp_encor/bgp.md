@@ -10,6 +10,9 @@
   - [Neighbor Formation](#neighbor-formation)
   - [Messages After The Neighbor Formation](#messages-after-the-neighbor-formation)
   - [Verification Commands](#verification-commands)
+- [How BGP Prevent Loop](#how-bgp-prevent-loop)
+  - [AS-PATH Attribute (eBGP)](#as-path-attribute-ebgp)
+  - [Split-Horizon Rule (iBGP)](#split-horizon-rule-ibgp)
 - [BGP Basic Config](#bgp-basic-config)
 - [Path Selection (WE LOVE ORANGES AS ORANGES MEAN PURE REFRESHMENT)](#path-selection-we-love-oranges-as-oranges-mean-pure-refreshment)
   - [8 Path Attributes](#8-path-attributes)
@@ -162,6 +165,23 @@ Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/State/PfxRcd
   - Time (e.g., `02:15:30`) / Number (e.g., `1`): If the session is up and healthy, it shows how long the session has been **Established (uptime)** followed by the **number of prefixes** received from that neighbor
 
   - Active: The router is actively trying to initiate **a TCP connection to the peer** (TCP handshake failed or listener isn't up yet)
+
+
+# How BGP Prevent Loop
+
+## AS-PATH Attribute (eBGP)
+
+- BGP is a path-vector protocol. Every time a route announcement passes from one AS to another, the receiving AS prepends its own AS number to the `AS_PATH` list
+
+- When a BGP router receives an update, it inspects the `AS_PATH`
+
+- If **it finds its own AS number listed inside the path**, it recognizes a loop and immediately discards the route
+
+## Split-Horizon Rule (iBGP)
+
+- Because iBGP peers do not modify the `AS_PATH` attribute when advertising routes within the same AS, BGP uses a split-horizon rule
+
+- Routes learned from one iBGP peer are never advertised to another iBGP peer
 
 
 # BGP Basic Config
