@@ -506,6 +506,12 @@ R3(config-router)# network 10.1.1.0 mask 255.255.255.0
   neighbor 203.0.113.2 default-originate
   ```
 
+- BGP's `network` statement does not work based on subnet containment
+
+  - It requires an exact match between **the Network Prefix and Mask** in the BGP statement and **a route in the IP Routing Table**
+
+  - Example: the command `network 198.51.100.0 mask 255.255.255.0` doesn't work if we have `198.51.100.0/30` in the IP Routing Table
+
 
 # Todos
 
