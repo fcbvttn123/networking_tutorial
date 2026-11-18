@@ -113,17 +113,37 @@
 
 ## Neighbor Formation
 
-- Idle State
+- Idle State: right after the config for a new neighbor
 
-- 3-way TCP Handshake
+  - Initializing the `ConnectRetry` timer
+
+- Connect State (3-way Handshake)
+
+  - What happens: BGP initiates a TCP connection and waits for the 3-way handshake (SYN, SYN-ACK, ACK) to complete
+
+  - Next step: If TCP succeeds, it transitions to `OpenSent`. If the `ConnectRetry` timer expires before success, it moves to `Active`
 
 - Active State
 
+  - What happens: The initial TCP connection attempt failed, so BGP actively listens for an incoming connection from the peer while periodically retrying its own outbound TCP connection attempt
+
+  - Common issues: Being stuck in Active usually points to TCP problems—such as a firewall blocking port 179, a mismatch in IP addresses, or an MTU/routing mismatch
+
 - Open Sent State: R1 to R2
+
+  - What happens: The TCP connection is established, and BGP has sent an `OPEN` message to the peer. It now waits for an `OPEN` message back
+
+  - Checks performed: BGP versions, AS numbers, router IDs, and security parameters must match or be valid
 
 - Open Confirm State: R2 to R1
 
+  - What happens: BGP has received and validated the peer’s `OPEN` message and sent a `KEEPALIVE`. It now waits for a `KEEPALIVE` message in return
+
 - Established State
+
+  - What happens: The peer adjacency is complete. BGP routers exchange UPDATE messages to share and advertise routing information
+  
+  - This is the only operational state for normal routing
 
 ## Messages After The Neighbor Formation
 
