@@ -31,6 +31,7 @@
 - [BGP Next Hop Self](#bgp-next-hop-self)
   - [What it is](#what-it-is)
   - [The Problem It Solves](#the-problem-it-solves)
+- [Outbound Route Map](#outbound-route-map)
 - [iBGP vs eBGP](#ibgp-vs-ebgp)
 - [Why we need iBGP](#why-we-need-ibgp)
 - [Why we prioritize BGP over Static Routes for a Multihomed Network](#why-we-prioritize-bgp-over-static-routes-for-a-multihomed-network)
@@ -392,6 +393,19 @@ Origin codes: i - IGP, e - EGP, ? - incomplete
     neighbor 192.168.1.2 remote-as 65001
     neighbor 192.168.1.2 next-hop-self
   ```
+
+
+# Outbound Route Map
+
+- It is a network routing policy applied to outgoing routing updates (most commonly in BGP) to filter which routes are advertised and modify their attributes before sending them to a neighbor
+
+- In iBGP, an outbound route map is a policy **applied to BGP routes before a router advertises them** to an iBGP neighbor within the same AS
+
+  - **Setting Next-Hop**: using `set ip next-hop` (for example, in transit or route-reflector scenarios) so internal neighbors reach prefixes through a specified next-hop address
+
+  - Filtering outbound advertisements: Preventing certain prefixes from being advertised to specific internal peers
+
+  - Adjusting BGP attributes: Modifying attributes such as communities or metrics (like MED) when permitted by the platform and route type
 
 
 # iBGP vs eBGP
