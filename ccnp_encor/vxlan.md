@@ -14,6 +14,9 @@
   - [Manually Establishing a VXLAN Tunnel](#manually-establishing-a-vxlan-tunnel)
   - [Automatically Establishing a VXLAN Tunnel](#automatically-establishing-a-vxlan-tunnel)
   - [Which Tunnel Should Packets Enter?](#which-tunnel-should-packets-enter)
+- [VXLAN Gateway Types](#vxlan-gateway-types)
+  - [L2 VXLAN Gateway](#l2-vxlan-gateway)
+  - [L3 VXLAN Gateway](#l3-vxlan-gateway)
 
 
 # What VXLAN is
@@ -203,3 +206,52 @@ interface Nve1   //Create logical interface NVE 1.
 - There may be more than one VXLAN tunnel that belongs to the same BD. For example, in the mentioned ingress replication list, the source VTEP (`1.1.1.1`) has two remote VTEPs (`2.2.2.2` and `2.2.2.3`). So another question arises: which tunnel are packets supposed to enter?
 
 - In **basic Layer 2 and Layer 3 forwarding**, Layer 2 forwarding relies on the MAC address table and Layer 3 forwarding relies on the Forwarding Information Base (FIB) table. If there is no required MAC address entry, a host broadcasts an ARP request packet to obtain the remote MAC address. This implementation is similar on a VXLAN network
+
+
+# VXLAN Gateway Types
+
+## L2 VXLAN Gateway
+
+- In practice, it is a VTEP operating in bridging mode
+
+    - **A VTEP can also act as a L3 VXLAN gateway** when it routes traffic between different subnets or VNIs
+
+    - People often use "VTEP" and "L2 VXLAN gateway" interchangeably when talking about **basic VLAN-to-VNI bridging**
+
+- It enables **intra-subnet communication** on the same VXLAN network
+
+  - ARP Request Packet Forwarding
+
+      - VTEP_1 identifies the BD and VNI to which the packet belongs (thanks to the config of the L2 sub-interface on the physical interface)
+
+      - VTEP_1 learns the MAC address entry (MAC address MAC_A, VNI 5000, and inbound interface Port_1), and saves the entry to the local MAC address table
+
+      - After that, VTEP_1 replicates the packet and sends it to each remote VTEP in the ingress replication list, and performs VXLAN encapsulation on the packet
+
+      - The other VTEPs also learn the MAC address entry when they receive that broadcasted ARP request
+
+  - Unicast Communication
+
+      - After the ARP, VM_A and VM_B know each other's MAC
+
+      - They can communicate in unicast mode
+
+      - he VXLAN encapsulation and decapsulation process of unicast packets is similar to the ARP Request Process
+
+## L3 VXLAN Gateway
+
+- Centralized VXLAN Gateway
+
+    - The L3 Gateway is deployed on **only one device**. All traffic sent across subnets is forwarded through the L3 gateway
+
+    - The Layer 3 gateway addresses of VM_A and VM_B are the IP addresses of interfaces `BDIF 10` and `BDIF 20` on VTEP_3
+
+    - `BDIF 10` has `MAC_10` and `10.1.10.10`
+
+    - `BDIF 20` has `MAC_20` and `10.1.20.10`
+
+    - L3 Gateways are deployed on a pair of spine switches for HA, though a single spine node is sometimes used in small design
+
+- Distributed VXLAN Gateway
+
+    - On a VXLAN network where distributed gateways are deployed, BGP EVPN is recommended as the VXLAN control plane
