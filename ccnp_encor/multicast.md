@@ -151,3 +151,37 @@
     IGMP(0): Add Group Record for 239.1.1.1, type 5
     IGMP(0): Send unsolicited v3 Report with 1 group records on GigabitEthernet0/1
     ```
+
+## IGMP Filter
+
+- Configure IGMP filtering on a multicast router to restrict the multicast group addresses
+
+- Router IGMP Filter Config
+
+    ```bash
+    R1(config)#ip access-list standard LIMIT_IGMP
+    R1(config-std-nacl)#deny host 239.2.2.2
+    R1(config-std-nacl)#permit 224.0.0.0 15.255.255.255
+    R1(config)#interface GigabitEthernet 0/1
+    R1(config-if)#ip pim sparse-mode
+    R1(config-if)#ip igmp access-group LIMIT_IGMP
+
+    H1(config)#interface GigabitEthernet 0/1
+    H1(config-if)#ip igmp join-group 239.2.2.2
+
+    R1#
+    IGMP(0): Received v2 Report on GigabitEthernet0/1 from 192.168.1.1 for 239.2.2.2
+    IGMP(*): Group 239.2.2.2 access denied on GigabitEthernet0/1
+    ```
+
+- Switch IGMP Snooping Filter Config
+
+    ```bash
+    # block multicast group 239.3.3.3
+    SW1(config)#ip igmp profile 1
+    SW1(config-igmp-profile)#deny
+    SW1(config-igmp-profile)#range 239.3.3.3
+    SW1(config)#interface GigabitEthernet 1/0/2
+    # the "ip igmp filter" command is what we need to activate the IGMP profile. You can only activate this on l2 access ports
+    SW1(config-if)#ip igmp filter 1
+    ```
