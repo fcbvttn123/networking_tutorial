@@ -334,3 +334,40 @@ IGMPSN: group: Forwarding 239.1.1.1 report to router ports
     IGMPSN: group: Deleting leave port on port Gi1/0/3, for 239.1.1.1 on Vlan 1 
     IGMPSN: group: Deleting port Gi1/0/3 from group 239.1.1.1 on Vlan 1
     ```
+
+
+# Multicast Layer 3
+
+## Multicast Loop Prevention
+
+- RPF (Reverse Path Forwarding)
+
+- When a router receives a multicast packet on an interface, it looks at the source IP address and does two checks:
+
+    - Do we have an entry that matches the source address in **the unicast routing table**?
+
+    - If so, what interface do we use to reach that source address?
+
+    - When the multicast packet is received on the interface that matches the information from the unicast routing table, it passes the RPF check and we accept the packet
+    
+    - When it fails the RPF check, we drop the packet
+
+## Multicast Routing
+
+- Multicast Routing Protocols: **Dense Mode** and **Sparse Mode**
+
+    - Dense Mode: when a router receives the multicast traffic, it will flood it on all of its interfaces except the interface where it received the multicast traffic on
+
+        - If the neighbors don't want to receive the multicast traffic, they will send a **prune message** to signal the sender
+
+        - Some dense mode routing protocols: `DVMRP`, `MOSPF`, `PIM Dense Mode` (the most popular multicast routing protocol)
+
+    - Sparse Mode: sends multicast traffic only when a router requests it
+
+        - Problem: where are you going to send your request to? 
+
+        - RP (Rendezvous Point): all multicast traffic is forwarded to the RP and when other routers want to receive it, they’ll have to find their way towards the RP
+
+        - A router, which wants to join the multicast group, sends a `PIM Join` message to the RP
+
+        - When using sparse mode, all routers need to know the IP address of the RP, the RP address can be configured statically or learned dynamically
