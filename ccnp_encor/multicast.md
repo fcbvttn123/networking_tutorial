@@ -371,3 +371,56 @@ IGMPSN: group: Forwarding 239.1.1.1 report to router ports
         - A router, which wants to join the multicast group, sends a `PIM Join` message to the RP
 
         - When using sparse mode, all routers need to know the IP address of the RP, the RP address can be configured statically or learned dynamically
+
+## PIM Dense Mode (PIM-DM)
+
+- It is a multicast routing mode that uses a "push" (flood-and-prune) model to deliver multicast traffic, assuming most subnets want to receive the stream
+
+- Routers flood multicast traffic out all enabled interfaces and rely on downstream routers to send Prune messages to stop unwanted traffic
+
+- PIM sparse mode uses a RP
+
+- Configuration
+
+    ```bash
+    # unicast routing: OSPF
+    R1(config)#router ospf 1
+    R1(config-router)#network 192.168.1.0 0.0.0.255 area 0
+    R1(config-router)#network 192.168.12.0 0.0.0.255 area 0
+    R1(config-router)#network 192.168.13.0 0.0.0.255 area 0
+    R2(config)#router ospf 1
+    R2(config-router)#network 192.168.2.0 0.0.0.255 area 0
+    R2(config-router)#network 192.168.12.0 0.0.0.255 area 0
+    R2(config-router)#network 192.168.23.0 0.0.0.255 area 0
+    R3(config)#router ospf 1
+    R3(config-router)#network 192.168.3.0 0.0.0.255 area 0
+    R3(config-router)#network 192.168.13.0 0.0.0.255 area 0
+    R3(config-router)#network 192.168.23.0 0.0.0.255 area 0
+    # pim dense mode: R1, R2 & R3
+    (config)#ip multicast-routing
+    # as soon as we enable PIM dense mode on the interface the router will start sending PIM hello packets - Src: 192.168.12.1, Dst: 224.0.0.13
+    R1(config)#interface GigabitEthernet 0/1
+    R1(config-if)#ip pim dense-mode
+    # enable pim on R2
+    R2(config)#interface GigabitEthernet 0/1
+    R2(config-if)#ip pim dense-mode
+    R1#
+    %PIM-5-NBRCHG: neighbor 192.168.12.2 UP on interface GigabitEthernet0/1
+    # pim dense neighbor
+    R1#show ip pim neighbor 
+    PIM Neighbor Table
+    Mode: B - Bidir Capable, DR - Designated Router, N - Default DR Priority,
+        P - Proxy Capable, S - State Refresh Capable, G - GenID Capable,
+        L - DR Load-balancing Capable
+    Neighbor          Interface                Uptime/Expires    Ver   DR
+    Address                                                            Prio/Mode
+    192.168.12.2      GigabitEthernet0/1       00:05:59/00:01:37 v2    1 / DR S P G
+    192.168.13.3      GigabitEthernet0/2       00:00:48/00:01:26 v2    1 / DR S P G
+    # multicast routing table
+    R1#show ip mroute
+    (*, 224.0.1.40), 00:12:12/00:02:48, RP 0.0.0.0, flags: DCL
+    Incoming interface: Null, RPF nbr 0.0.0.0
+    Outgoing interface list:
+        GigabitEthernet0/2, Forward/Dense, 00:03:06/stopped
+        GigabitEthernet0/1, Forward/Dense, 00:12:12/stopped
+    ```
