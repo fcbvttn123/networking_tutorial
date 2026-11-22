@@ -189,6 +189,27 @@
 
 # Multicast Layer 2
 
+## Verification Commands
+
+```bash
+# IGMP is enabled on a switch
+SW1#show ip igmp snooping | include snoop 
+IGMP snooping                : Enabled
+
+# check the multicast router
+SW1#show ip igmp snooping querier 
+Vlan      IP Address               IGMP Version   Port             
+-------------------------------------------------------------
+1         192.168.1.254            v2            Fa0/1 
+
+# debug
+SW1#debug ip igmp snooping 239.1.1.1
+IGMPSN: group: Received IGMPv2 report for group 239.1.1.1 received on Vlan 1, port Fa0/3
+IGMPSN: Add v2 group 239.1.1.1 member port Fa0/3, on Vlan 1
+IGMPSN: group: Added port Fa0/3 to group 239.1.1.1
+IGMPSN: group: Forwarding 239.1.1.1 report to router ports
+```
+
 ## IGMP Snooping
 
 - IGMP Snooping is a L2 switch feature
