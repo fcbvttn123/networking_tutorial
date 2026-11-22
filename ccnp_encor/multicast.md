@@ -185,3 +185,123 @@
     # the "ip igmp filter" command is what we need to activate the IGMP profile. You can only activate this on l2 access ports
     SW1(config-if)#ip igmp filter 1
     ```
+
+
+# Multicast Layer 2
+
+## IGMP Snooping
+
+- IGMP Snooping is a L2 switch feature
+
+- IGMP Snooping allows us to constrain our multicast traffic by listening to IGMP traffic between the router and hosts
+
+    - When the host sends a `membership report` (IGMP Packet) for a multicast group then the switch adds **an entry in the CAM table** for the interface that is connected to the host
+    
+    - When the host sends a `leave message` (IGMP Packet) for a multicast group then the switch removes **an entry in the CAM table** for the interface that is connected to the host
+
+    - Problems
+
+        - For IGMPv1, hosts never send any leave group messages so there’s nothing to snoop
+
+        - A video server that never joins any multicast groups but only streams traffic to it => no IGMP to snoop
+
+- How a SW detect the interfaces connected to **multicast enabled routers**
+
+    - Once IGMP snooping is enabled, the switch will detect multicast enabled routers by listening to the following messages
+
+        - IGMP General Query (0100.5e00.0001)
+
+        - OSPF (0100.5e00.0005 and 0100.5e00.0006)
+
+        - PIM version 1 and HSRP (0100.5e00.0002)
+
+        - PIM version 2 (0100.5e00.000d)
+
+        - DVMRP (0100.5e00.0004)
+
+    - When the switch detects a **multicast enabled router** then it will add the corresponding entry in the MAC table
+
+    - For example, all multicast traffic that has destination MAC address `0100.5e01.0101` will only be forwarded on interfaces connected to **multicast enabled router**
+
+- Configuration
+
+    ```bash
+    # how switch learns the location of the multicast-enabled router
+    SW1#debug ip igmp snooping router
+    router debugging is on
+    R1(config)#ip multicast-routing 
+    R1(config)#interface GigabitEthernet 0/1
+    R1(config-if)#ip pim sparse-mode
+    SW1#
+    IGMPSN: router: PIMV2 Hello packet received in 1
+    IGMPSN: router: Learning port: Gi1/0/1 as rport on Vlan 1
+    IGMPSN: router: Received IGMP pak on Vlan 1, port Gi1/0/1
+    SW1#show ip igmp snooping querier 
+    Vlan      IP Address               IGMP Version  Port              
+    -------------------------------------------------------------
+    1         192.168.1.254            v2            Gi1/0/1
+    SW1#show ip igmp snooping mrouter
+    Vlan    ports
+    ----    -----
+    1    Gi1/0/1(dynamic)
+
+    # configure H1 to join a multicast group
+    SW1#debug ip igmp snooping 239.1.1.1
+    group IP address debugging is on for 239.1.1.1
+    H1(config)#interface GigabitEthernet 0/1
+    H1(config-if)#ip igmp join-group 239.1.1.1
+    SW1#
+    IGMPSN: Received IGMPv2 Report for group 239.1.1.1 received on Vlan 1, port Gi1/0/2
+    IGMPSN: Add v2 group 239.1.1.1 member port Gi1/0/2, on Vlan 1
+    L2MM: Add member: gda:0100.5e01.0101, adding Gi1/0/2
+    IGMPSN: group: Added port Gi1/0/2 to group 239.1.1.1
+    IGMPSN: group: Forwarding 239.1.1.1 report to router ports
+    SW1#show ip igmp snooping groups 
+    Flags: I -- IGMP snooping, S -- Static, E -- EVPN sync
+    Vlan      Group                    Type        Version     Port List
+    -----------------------------------------------------------------------
+    1         224.0.1.40               I           v2          Gi1/0/1
+    1         239.1.1.1                I           v2          Gi1/0/2
+
+    # configure H2 to join a multicast group
+    H2(config)#interface GigabitEthernet 0/1
+    H2(config-if)#ip igmp join-group 239.1.1.1
+    SW1#
+    IGMPSN: Received IGMPv2 Report for group 239.1.1.1 received on Vlan 1, port Gi1/0/3
+    IGMPSN: Add v2 group 239.1.1.1 member port Gi1/0/3, on Vlan 1
+    IGMPSN: group: Added port Gi1/0/3 to group 239.1.1.1
+    IGMPSN: group: Forwarding 239.1.1.1 report to router ports
+    SW1#show ip igmp snooping groups 
+    Flags: I -- IGMP snooping, S -- Static, E -- EVPN sync
+    Vlan      Group                    Type        Version     Port List
+    -----------------------------------------------------------------------
+    1         224.0.1.40               I           v2          Gi1/0/1
+    1         239.1.1.1                I           v2          Gi1/0/2, Gi1/0/3
+
+    # the hosts should see each other’s membership reports but this is not the case anymore
+    # both hosts are now sending membership reports because they don’t see each other’s messages
+    debug ip igmp 
+    IGMP debugging is on
+    H1#
+    IGMP(0): Received v2 Query on GigabitEthernet0/1 from 192.168.1.254
+    IGMP(0): Set report delay time to 5.6 seconds for 239.1.1.1 on GigabitEthernet0/1
+    IGMP(0): Send v2 Report for 239.1.1.1 on GigabitEthernet0/1
+    H2#
+    IGMP(0): Received v2 Query on GigabitEthernet0/1 from 192.168.1.254
+    IGMP(0): Set report delay time to 2.8 seconds for 239.1.1.1 on GigabitEthernet0/1
+    IGMP(0): Send v2 Report for 239.1.1.1 on GigabitEthernet0/1
+
+    # one host leaves the group
+    SW1#debug ip igmp snooping group
+    group debugging is on
+    H2(config)#interface Gigabit0/1
+    H2(config-if)#no ip igmp join-group 239.1.1.1
+    SW1#
+    IGMPSN: Received IGMP Leave for group 239.1.1.1 received on Vlan 1, port Gi1/0/3
+    IGMPSN: group: Group exist - Leave for group 239.1.1.1 Client 192.168.1.2 received on Vlan 1, port Gi1/0/3, group state (1)
+    IGMPSN: group: Created v2 leave port on port Gi1/0/3, for group 239.1.1.1 on Vlan 1 
+    IGMPSN: group: Sending Group- Specific Query for group 239.1.1.1 on Vlan 1, port Gi1/0/3
+    IGMPSN: group: Sending Group- Specific Query for group 239.1.1.1 on Vlan 1, port Gi1/0/3
+    IGMPSN: group: Deleting leave port on port Gi1/0/3, for 239.1.1.1 on Vlan 1 
+    IGMPSN: group: Deleting port Gi1/0/3 from group 239.1.1.1 on Vlan 1
+    ```
