@@ -90,3 +90,64 @@
     IGMP(0): Send v2 Query on GigabitEthernet0/1 for group 239.1.1.1
     IGMP(0): MRT delete GigabitEthernet0/1 for (*,239.1.1.1) by 0
     ```
+
+## IGMPv3
+
+- IGMP version 3 adds support for **source filtering**
+
+- Each group a host joins also has a `mode`
+
+    - Include: this is a list of source addresses that we accept multicast traffic from
+
+    - Exclude: this is a list of source addresses that we refuse to accept multicast traffic from
+
+    - Example
+
+        ```bash
+        R1#show ip igmp groups 239.1.1.1 detail
+        Interface:      GigabitEthernet0/1
+        Group:          239.1.1.1
+        Flags:
+        Uptime:         00:12:27
+        Group mode:     INCLUDE
+        Last reporter:  192.168.1.101
+        Group source list: (C - Cisco Src Report, U - URD, R - Remote, S - Static,
+                            V - Virtual, M - SSM Mapping, L - Local,
+                            Ac - Channel accounted towards access control limit)
+        Source Address   Uptime    v3 Exp   CSR Exp   Fwd  Flags
+        1.1.1.1          00:12:27  00:02:27  stopped   Yes  R
+        ```
+
+- The router **maintains multicast membership information per host** and can account for different source-filtering requirements
+
+    - Suppose two hosts want to receive traffic for multicast group `239.1.1.1`
+    
+    - Host A wants traffic from all sources EXCEPT `Source 10.1.1.5`, host B wants all traffic INCLUDING `Source 10.1.1.5`
+
+    - The router maintains separate membership records for each host, rather than applying one source filter to the entire multicast group
+
+- The destination of the `membership report` is `224.0.0.22`, NOT the group address like IGMPv1 and IGMPv2
+
+    - For example, a host wants to join multicast group `239.1.1.1`
+
+    - The host sends to the destination IP `224.0.0.22`, and the group record is `239.1.1.1`
+
+    - It is `239.1.1.1` for IGMPv1 and IGMPv2
+
+- Configuration
+
+```bash
+H1(config)#interface GigabitEthernet 0/1
+H1(config-if)#ip igmp version 3
+H1(config-if)#ip igmp join-group 239.1.1.1 source 1.1.1.1
+
+H1#
+IGMP(0): WAVL Insert group: 239.1.1.1 interface: GigabitEthernet0/1 Successful
+IGMP(0): Create source 1.1.1.1
+IGMP(0): Building v3 Report on GigabitEthernet0/1
+IGMP(0): Add Group Record for 239.1.1.1, type 5
+IGMP(0): Send unsolicited v3 Report with 1 group records on GigabitEthernet0/1
+IGMP(0): Building v3 Report on GigabitEthernet0/1
+IGMP(0): Add Group Record for 239.1.1.1, type 5
+IGMP(0): Send unsolicited v3 Report with 1 group records on GigabitEthernet0/1
+```
