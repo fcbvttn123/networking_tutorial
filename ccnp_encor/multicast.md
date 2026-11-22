@@ -212,9 +212,15 @@ IGMPSN: group: Forwarding 239.1.1.1 report to router ports
 
 ## IGMP Snooping
 
+- For IPv4 multicast, **the multicast MAC address** range is: `01:00:5E:00:00:00` through `01:00:5E:7F:FF:FF`
+
+    - Multiple IPv4 multicast addresses can map to the same Ethernet multicast MAC address
+
+    - The Layer 2 switch may see the same multicast MAC for different multicast IP groups
+
 - IGMP Snooping is a L2 switch feature
 
-- IGMP Snooping allows us to constrain our multicast traffic by listening to IGMP traffic between the router and hosts
+- IGMP Snooping allows us to constrain our multicast traffic by **listening to IGMP traffic** between the router and hosts **on the same VLAN**
 
     - When the host sends a `membership report` (IGMP Packet) for a multicast group then the switch adds **an entry in the CAM table** for the interface that is connected to the host
     
@@ -228,6 +234,8 @@ IGMPSN: group: Forwarding 239.1.1.1 report to router ports
 
 - How a SW detect the interfaces connected to **multicast enabled routers**
 
+    - A multicast-enabled VLAN **needs an active IGMP Querier**. The querier is commonly a Layer 3 switch or router
+    
     - Once IGMP snooping is enabled, the switch will detect multicast enabled routers by listening to the following messages
 
         - IGMP General Query (0100.5e00.0001)
