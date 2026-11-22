@@ -136,18 +136,18 @@
 
 - Configuration
 
-```bash
-H1(config)#interface GigabitEthernet 0/1
-H1(config-if)#ip igmp version 3
-H1(config-if)#ip igmp join-group 239.1.1.1 source 1.1.1.1
+    ```bash
+    H1(config)#interface GigabitEthernet 0/1
+    H1(config-if)#ip igmp version 3
+    H1(config-if)#ip igmp join-group 239.1.1.1 source 1.1.1.1
 
-H1#
-IGMP(0): WAVL Insert group: 239.1.1.1 interface: GigabitEthernet0/1 Successful
-IGMP(0): Create source 1.1.1.1
-IGMP(0): Building v3 Report on GigabitEthernet0/1
-IGMP(0): Add Group Record for 239.1.1.1, type 5
-IGMP(0): Send unsolicited v3 Report with 1 group records on GigabitEthernet0/1
-IGMP(0): Building v3 Report on GigabitEthernet0/1
-IGMP(0): Add Group Record for 239.1.1.1, type 5
-IGMP(0): Send unsolicited v3 Report with 1 group records on GigabitEthernet0/1
-```
+    H1#
+    IGMP(0): WAVL Insert group: 239.1.1.1 interface: GigabitEthernet0/1 Successful
+    IGMP(0): Create source 1.1.1.1
+    IGMP(0): Building v3 Report on GigabitEthernet0/1
+    IGMP(0): Add Group Record for 239.1.1.1, type 5
+    IGMP(0): Send unsolicited v3 Report with 1 group records on GigabitEthernet0/1
+    IGMP(0): Building v3 Report on GigabitEthernet0/1
+    IGMP(0): Add Group Record for 239.1.1.1, type 5
+    IGMP(0): Send unsolicited v3 Report with 1 group records on GigabitEthernet0/1
+    ```
